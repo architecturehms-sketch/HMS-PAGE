@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HMS.ARCHITECTURE | Architecture & Design</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter 폰트만 유지 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        /* 기본 설정 */
+        :root {
+            --bg-color: #f4f4f0;
+            --text-color: #0f0f0f;
+            --accent-color: #555;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-color);
+            background-color: rgb(10, 10, 12); /* 초기 인트로 배경색 */
+            overflow-x: hidden;
+        }
+
+        /* 스크롤바 숨기기 */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #ccc; }
+
+        /* 폰트 유틸리티 */
+        .font-mono { font-family: 'Space Mono', monospace; }
+        
+        /* 캔버스 배경 (z-index 30 - 콘텐츠 아래, 헤더 위/아래 조화) */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 30;
+            pointer-events: none; /* 클릭 방해 금지 */
+        }
+
+        /* 인트로 UI */
+        #intro-ui {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            color: #ececec;
+            transition: opacity 1.5s ease-in-out;
+            cursor: pointer;
+        }
+        #intro-ui.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* 랜딩페이지와 동일한 폰트 스타일, 옅은 면으로 처리하여 자연스러운 마스킹 아트 연출 */
+        .intro-title {
+            font-size: 11vw;
+            line-height: 0.85;
+            letter-spacing: -0.05em;
+            font-weight: 900;
+            text-transform: uppercase;
+            text-align: center;
+            color: transparent; 
+            
+            /* 테두리(stroke) 제거 후 옅은 솔리드 베이스로 변경해 글자 겹침 현상 해결 */
+            background-image: radial-gradient(
+                circle 15vw at var(--mouse-x, -100vw) var(--mouse-y, -100vh),
+                rgba(255, 255, 255, 1) 0%,
+                rgba(255, 255, 255, 0.15) 80% 
+            );
+            -webkit-background-clip: text;
+            background-clip: text;
+
+            pointer-events: none;
+            position: relative;
+        }
+
+        /* 로고를 관통하는 은은한 가로선 (디자인 요소) */
+        .intro-title::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: -10%; width: 120%; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            z-index: -1;
+        }
+
+        .click-prompt {
+            position: absolute;
+            bottom: 10%;
+            font-size: 0.8rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* --- 중간 단계: 3D 캐러셀 UI --- */
+        #carousel-ui {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 40; /* 캔버스(30) 위에 배치되어 점들을 감싸는 효과 부여 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1500px; /* 3D 공간감 깊이 */
+            opacity: 0; pointer-events: none;
+            transition: opacity 1s ease;
+        }
+        #carousel-ui.active {
+            opacity: 1; pointer-events: auto;
+        }
+
+        #carousel-scene {
+            width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            transform-style: preserve-3d;
+        }
+
+        #carousel-ring {
+            position: relative;
+            width: 280px; height: 420px;
+            transform-style: preserve-3d;
+            /* JS로 rotateY 조작 */
+        }
+
+        .carousel-item {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #000;
+            cursor: pointer;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            -webkit-box-reflect: below 5px linear-gradient(transparent, transparent, rgba(0,0,0,0.2));
+            /* JS로 translateZ 및 rotateY 개별 배치 */
+        }
+        .carousel-item::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 60%);
+            opacity: 1; transition: opacity 0.4s ease;
+            z-index: 1;
+        }
+        .carousel-item:hover::after { opacity: 0.3; }
+
+        .carousel-item img {
+            width: 100%; height: 100%; object-fit: cover;
+            filter: grayscale(60%) brightness(0.6);
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .carousel-item:hover img {
+            filter: grayscale(0%) brightness(1.1);
+            transform: scale(1.05);
+        }
+
+        .carousel-item .carousel-info {
+            position: absolute; bottom: 20px; left: 20px;
+            z-index: 2; transition: transform 0.4s ease;
+        }
+        .carousel-item:hover .carousel-info {
+            transform: translateY(-5px);
+        }
+        .carousel-info h3 {
+            color: #fff; font-size: 1.2rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 2px;
+        }
+        .carousel-info p {
+            color: rgba(255,255,255,0.6); font-size: 0.7rem; font-family: 'Space Mono', monospace; text-transform: uppercase; letter-spacing: 0.1em;
+        }
+
+
+        /* --- 메인 콘텐츠 --- */
+        #main-content {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 1.5s ease-out 0.5s, transform 1.5s ease-out 0.5s;
+            pointer-events: none;
+        }
+        #main-content.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        /* 랜딩페이지 로고 마스킹 효과 (솔리드 베이스, 마우스 호버 시 화이트) */
+        .landing-logo {
+            color: transparent;
+            -webkit-text-stroke: 0; /* 테두리 제거 */
+            background-image: radial-gradient(
+                circle 15vw at var(--mouse-x, -100vw) var(--mouse-y, -100vh),
+                #ffffff 0%, /* 마우스 주변은 하얗게 */
+                #0f0f0f 60% /* 기본은 검은색(솔리드) 유지 */
+            );
+            -webkit-background-clip: text;
+            background-clip: text;
+            position: relative;
+            display: inline-block;
+        }
+
+        .landing-logo::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: -5%; width: 110%; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0,0,0,0.2), transparent);
+            z-index: -1;
+        }
+
+        /* 타이포그래피 특화 */
+        .mega-text {
+            font-size: 12vw;
+            line-height: 0.8;
+            letter-spacing: -0.05em;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        /* 갤러리/리스트 모션 로직 */
+        .case-image-container { position: relative; overflow: hidden; background: transparent; }
+        .case-image { transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94); will-change: transform; }
+        .case-image-container:hover .case-image { transform: scale(1.05); }
+        .case-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); color: white; opacity: 0; transition: opacity 0.3s ease; display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem; pointer-events: none;}
+        .case-image-container:hover .case-overlay { opacity: 1; }
+
+        .marquee-container { overflow: hidden; white-space: nowrap; border-top: 1px solid #111; border-bottom: 1px solid #111; padding: 10px 0; }
+        .marquee-content { display: inline-block; animation: marquee 25s linear infinite; font-weight: 600; text-transform: uppercase; }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        .project-list-item { cursor: pointer; transition: opacity 0.3s; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .project-list-item:hover { opacity: 0.5; }
+        .project-list-item:last-child { border-bottom: none; }
+        #preview-image { transition: opacity 0.4s ease, background-image 0.4s ease; background-size: cover; background-position: center; }
+    </style>
+</head>
+<body class="antialiased selection:bg-black selection:text-white">
+
+    <!-- WebGL/Canvas 백그라운드 (3D 점선 모션) -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- 1. 인트로 클릭 영역 -->
+    <div id="intro-ui" onclick="startCarousel()">
+        <!-- 코너 데코레이션 (크로스헤어) -->
+        <div class="absolute top-10 left-10 w-6 h-6 border-t border-l border-white/30"></div>
+        <div class="absolute top-10 right-10 w-6 h-6 border-t border-r border-white/30"></div>
+        <div class="absolute bottom-10 left-10 w-6 h-6 border-b border-l border-white/30"></div>
+        <div class="absolute bottom-10 right-10 w-6 h-6 border-b border-r border-white/30"></div>
+        
+        <!-- 마이크로 카피 -->
+        <div class="absolute top-10 left-1/2 -translate-x-1/2 font-mono text-[10px] text-white/40 tracking-[0.3em]">SCALE 1:100</div>
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 font-mono text-[10px] text-white/40 tracking-[0.3em]">PROJECTION.MATRIX</div>
+
+        <div class="intro-title" id="intro-title">
+            HMS.<br>
+            ARCHITECTURE
+        </div>
+        <div class="click-prompt font-mono">Click to Enter</div>
+    </div>
+
+    <!-- 2. 중간 단계: 3D 캐러셀 UI -->
+    <div id="carousel-ui" class="hidden">
+        <div id="carousel-scene">
+            <div id="carousel-ring">
+                <!-- JS에서 동적으로 생성됨 -->
+            </div>
+        </div>
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 font-mono text-[10px] text-white/40 tracking-[0.2em] uppercase">Select a project to enter</div>
+    </div>
+
+    <!-- 3. 메인 콘텐츠 (랜딩 페이지) -->
+    <div id="main-content">
+        
+        <header class="fixed top-0 left-0 w-full bg-[#f4f4f0]/80 backdrop-blur-md z-40 border-b border-black">
+            <div class="flex justify-between items-start p-4 text-xs font-mono uppercase">
+                <div class="w-1/4">HMS ARCHITECTURE<br>SEOUL, KR</div>
+                <div class="w-1/4 hidden md:block">ARCHITECTURE<br>INTERIOR DESIGN<br>URBAN PLANNING</div>
+                <div class="w-1/4 hidden md:block text-center">STATUS: ACTIVE<br><span id="clock">00:00:00</span></div>
+                <div class="w-1/4 text-right flex flex-col items-end gap-1">
+                    <a href="#" class="hover:underline">WORK</a>
+                    <a href="#" class="hover:underline">STUDIO</a>
+                    <a href="#" class="hover:underline">CONTACT</a>
+                </div>
+            </div>
+        </header>
+
+        <section class="pt-40 pb-10 px-4">
+            <div id="landing-title" class="landing-logo">
+                <h1 class="mega-text tracking-tighter">HMS.</h1>
+                <h1 class="mega-text tracking-tighter">ARCHITECTURE</h1>
+            </div>
+        </section>
+
+        <section class="px-4 py-12 md:w-2/3 lg:w-1/2">
+            <p class="text-2xl md:text-4xl font-medium leading-tight tracking-tight bg-[#f4f4f0]/60 inline-block">
+                우리는 공간의 본질을 탐구하고, 구조적 아름다움과 사용자의 경험이 교차하는 지점을 설계하는 건축 사무소입니다.
+            </p>
+            <div class="mt-8 flex gap-8 text-sm font-mono uppercase text-gray-600">
+                <span>EST. 2024</span><span>BASED IN SEOUL</span>
+            </div>
+        </section>
+
+        <!-- 갤러리 섹션 -->
+        <section class="px-4 py-10 relative z-10">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="case-image-container h-[50vh] md:h-[70vh] cursor-pointer">
+                    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80" alt="Villa Concrete" class="case-image w-full h-full object-cover">
+                    <div class="case-overlay">
+                        <div class="font-mono text-xs uppercase tracking-widest">Case: 01</div>
+                        <div><h2 class="text-3xl font-bold mb-2">VILLA OBLIQUE</h2><p class="text-sm">RESIDENTIAL / CONCRETE</p></div>
+                    </div>
+                </div>
+                <div class="case-image-container h-[50vh] md:h-[70vh] cursor-pointer mt-0 md:mt-24">
+                    <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80" alt="Corporate Office" class="case-image w-full h-full object-cover">
+                    <div class="case-overlay">
+                        <div class="font-mono text-xs uppercase tracking-widest">Case: 02</div>
+                        <div><h2 class="text-3xl font-bold mb-2">THE VOID HEADQUARTERS</h2><p class="text-sm">COMMERCIAL / INTERIOR</p></div>
+                    </div>
+                </div>
+                <div class="case-image-container h-[60vh] md:col-span-2 cursor-pointer mt-4 md:mt-10">
+                    <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" alt="Museum Interior" class="case-image w-full h-full object-cover">
+                    <div class="case-overlay">
+                        <div class="font-mono text-xs uppercase tracking-widest">Case: 03</div>
+                        <div><h2 class="text-4xl md:text-5xl font-bold mb-2">SEOUL ART PAVILION</h2><p class="text-sm">CULTURAL / EXHIBITION</p></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 마퀴 텍스트 -->
+        <section class="marquee-container bg-black text-white py-4 my-20 relative z-10">
+            <div class="marquee-content font-mono text-xl md:text-2xl">
+                ARCHITECTURE &nbsp;///&nbsp; INTERIOR DESIGN &nbsp;///&nbsp; MASTER PLANNING &nbsp;///&nbsp; SPATIAL BRANDING &nbsp;///&nbsp; ARCHITECTURE &nbsp;///&nbsp; INTERIOR DESIGN &nbsp;///&nbsp; MASTER PLANNING &nbsp;///&nbsp; SPATIAL BRANDING &nbsp;///&nbsp;
+            </div>
+        </section>
+
+        <!-- 아카이브 리스트 -->
+        <section class="px-4 py-20 border-t border-black bg-[#f4f4f0]/90 relative z-10">
+            <div class="flex flex-col md:flex-row gap-10">
+                <div class="w-full md:w-1/2">
+                    <h3 class="font-mono text-xs uppercase mb-8 tracking-widest text-gray-500">Selected Archive (Hover)</h3>
+                    <ul class="text-3xl md:text-5xl font-bold uppercase" id="project-list">
+                        <li class="project-list-item py-6 flex justify-between items-center" data-img="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80">
+                            <span>Maison Noir</span><span class="text-sm font-mono text-gray-400">2023</span>
+                        </li>
+                        <li class="project-list-item py-6 flex justify-between items-center" data-img="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80">
+                            <span>Glass Tower</span><span class="text-sm font-mono text-gray-400">2022</span>
+                        </li>
+                        <li class="project-list-item py-6 flex justify-between items-center" data-img="https://images.unsplash.com/photo-1503387762-592deb58ef4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80">
+                            <span>Wood Pavilion</span><span class="text-sm font-mono text-gray-400">2021</span>
+                        </li>
+                        <li class="project-list-item py-6 flex justify-between items-center" data-img="https://images.unsplash.com/photo-1541888044738-1681282245b0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80">
+                            <span>Urban Renewal</span><span class="text-sm font-mono text-gray-400">2020</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="w-full md:w-1/2 h-[50vh] md:h-[80vh] sticky top-32">
+                    <div id="preview-image" class="w-full h-full bg-gray-200" style="background-image: url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80');"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 푸터 -->
+        <footer class="border-t border-black px-4 py-12 bg-black text-white relative z-10">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 font-mono text-sm uppercase">
+                <div><p class="font-bold mb-4">HMS ARCHITECTURE</p><p class="text-gray-400">Architecture & Design<br>Seoul, South Korea</p></div>
+                <div><p class="font-bold mb-4">INQUIRIES</p><p class="text-gray-400 hover:text-white cursor-pointer">INFO@HMS-ARCHITECTURE.COM</p><p class="text-gray-400 hover:text-white cursor-pointer">+82 2 1234 5678</p></div>
+                <div><p class="font-bold mb-4">SOCIAL</p><p class="text-gray-400 hover:text-white cursor-pointer">INSTAGRAM</p><p class="text-gray-400 hover:text-white cursor-pointer">LINKEDIN</p></div>
+                <div class="md:text-right"><p class="text-gray-600">© 2024 HMS ARCHITECTURE.<br>ALL RIGHTS RESERVED.</p></div>
+            </div>
+            <div class="mt-20"><h1 class="text-[10vw] font-black leading-none tracking-tighter opacity-20">HMS.</h1></div>
+        </footer>
+
+    </div>
+
+    <script>
+        // --- 0. 캐러셀 동적 생성 및 관리 ---
+        const carouselData = [
+            { img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=600", title: "VILLA OBLIQUE", desc: "RESIDENTIAL" },
+            { img: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=600", title: "THE VOID HQ", desc: "COMMERCIAL" },
+            { img: "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=600", title: "ART PAVILION", desc: "EXHIBITION" },
+            { img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=600", title: "GLASS TOWER", desc: "OFFICE" },
+            { img: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=600", title: "WOOD PAVILION", desc: "CULTURAL" },
+            { img: "https://images.unsplash.com/photo-1541888044738-1681282245b0?q=80&w=600", title: "URBAN RENEWAL", desc: "MASTERPLAN" },
+            { img: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=600", title: "MAISON NOIR", desc: "RESIDENTIAL" }
+        ];
+
+        const ring = document.getElementById('carousel-ring');
+        const itemCount = carouselData.length;
+        const carouselRadius = 550; // 이 반경이 캔버스의 점 덩어리를 감싸는 느낌을 줍니다.
+
+        carouselData.forEach((data, index) => {
+            let angle = (index / itemCount) * 360;
+            let item = document.createElement('div');
+            item.className = 'carousel-item';
+            // Z축으로 밀어내어 원형 배치
+            item.style.transform = `rotateY(${angle}deg) translateZ(${carouselRadius}px)`;
+            item.innerHTML = `
+                <img src="${data.img}" alt="${data.title}">
+                <div class="carousel-info">
+                    <h3>${data.title}</h3>
+                    <p>VIEW PROJECT</p>
+                </div>
+            `;
+            item.onclick = enterMainPage; // 이미지 클릭 시 메인페이지로 전환
+            ring.appendChild(item);
+        });
+
+        // --- 1. 3D Canvas 파티클 & 트랜지션 로직 ---
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let w, h;
+        
+        let state = 'intro'; // 'intro', 'carousel', 'transitioning', 'main'
+        let transitionProgress = 0; 
+        let introTime = 0; // 인트로 경과 시간 추적용
+        
+        // 캐러셀 애니메이션 제어 변수
+        let carouselRotY = 0;
+        let carouselProgress = 0; // 0 to 1 (캐러셀 등장 시 한 바퀴 스핀용)
+
+        // 정규화된 마우스 좌표 (-1 to 1)로 3D 회전 제어
+        let mouse = { x: 0, y: 0, normX: 0, normY: 0 };
+        let centerPoint = { x: window.innerWidth/2, y: window.innerHeight/2 };
+        const introTitleEl = document.getElementById('intro-title');
+        const landingTitleEl = document.getElementById('landing-title');
+
+        function resize() {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+            centerPoint.x = w/2;
+            centerPoint.y = h/2;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+            mouse.normX = (e.clientX / w) * 2 - 1;
+            mouse.normY = (e.clientY / h) * 2 - 1;
+
+            if (state === 'intro' && introTitleEl) {
+                const rect = introTitleEl.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                introTitleEl.style.setProperty('--mouse-x', `${x}px`);
+                introTitleEl.style.setProperty('--mouse-y', `${y}px`);
+            }
+
+            if (state === 'main' && landingTitleEl) {
+                const rect = landingTitleEl.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                landingTitleEl.style.setProperty('--mouse-x', `${x}px`);
+                landingTitleEl.style.setProperty('--mouse-y', `${y}px`);
+            }
+        });
+
+        const lerp = (a, b, n) => (1 - n) * a + n * b;
+
+        // --- 3D Particle 클래스 ---
+        const particleCount = 2500;
+        const particles = [];
+
+        class Particle {
+            constructor(index) {
+                this.index = index;
+                this.cx = (Math.random() - 0.5) * 1000;
+                this.cy = (Math.random() - 0.5) * 1000;
+                this.cz = (Math.random() - 0.5) * 1000;
+                this.calcArchTarget();
+            }
+
+            calcArchTarget() {
+                let gridSize = 14; 
+                let gx = this.index % gridSize;
+                let gy = Math.floor(this.index / gridSize) % gridSize;
+                let gz = Math.floor(this.index / (gridSize * gridSize));
+                
+                let spacing = 65; 
+                
+                let distToCenter = Math.sqrt((gx - 7)**2 + (gz - 7)**2);
+                if(distToCenter < 3 && gy < 10) {
+                    gy += 8; 
+                }
+
+                this.targetArchX = (gx - gridSize/2) * spacing;
+                this.targetArchY = (gy - gridSize/2) * spacing * 1.5; 
+                this.targetArchZ = (gz - gridSize/2) * spacing;
+            }
+
+            update(time) {
+                let phi = Math.acos(-1 + (2 * this.index) / particleCount);
+                let theta = Math.sqrt(particleCount * Math.PI) * phi;
+                let r = 550 + Math.sin(phi * 5 + time * 1.5) * 100 + Math.cos(theta * 3 + time) * 100;
+                let tx = r * Math.cos(theta) * Math.sin(phi);
+                let ty = r * Math.sin(theta) * Math.sin(phi);
+                let tz = r * Math.cos(phi);
+
+                // 인트로 시간에는 형태가 모핑되고, 캐러셀 상태일 때는 완전히 건축 형태로 고정
+                let morphFactor = 0;
+                if (state === 'intro') {
+                    morphFactor = Math.max(0, Math.min(1, (introTime - 2.0) / 3.0));
+                    morphFactor = morphFactor * morphFactor * (3 - 2 * morphFactor);
+                } else {
+                    morphFactor = 1; 
+                }
+
+                let currentTargetX = lerp(tx, this.targetArchX, morphFactor);
+                let currentTargetY = lerp(ty, this.targetArchY, morphFactor);
+                let currentTargetZ = lerp(tz, this.targetArchZ, morphFactor);
+
+                this.cx += (currentTargetX - this.cx) * 0.05;
+                this.cy += (currentTargetY - this.cy) * 0.05;
+                this.cz += (currentTargetZ - this.cz) * 0.05;
+            }
+        }
+
+        for(let i = 0; i < particleCount; i++) {
+            particles.push(new Particle(i));
+        }
+
+        let camAngleY = 0;
+        let camAngleX = 0;
+
+        // --- 렌더 루프 ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (state === 'intro') {
+                introTime += 0.016; 
+            }
+
+            // 캐러셀 상태에서의 애니메이션 로직 (한바퀴 회전 및 마우스 추적)
+            if (state === 'carousel') {
+                if (carouselProgress < 1) {
+                    carouselProgress += 0.015;
+                    if (carouselProgress > 1) carouselProgress = 1;
+                }
+                
+                // 큐빅 아웃(Cubic Out) 방식으로 부드럽게 한 바퀴(360도) 스핀
+                let easeOut = 1 - Math.pow(1 - carouselProgress, 3);
+                let spinAngle = easeOut * 360; 
+                
+                // 스핀이 거의 끝날 무렵부터 마우스 커서 위치에 반응하여 좌우로 추가 회전 (-60도 ~ 60도)
+                let mouseOffset = mouse.normX * -60; 
+                
+                let targetRot = spinAngle + mouseOffset;
+                carouselRotY += (targetRot - carouselRotY) * 0.08; // 부드러운 회전 반영
+                ring.style.transform = `rotateY(${carouselRotY}deg)`;
+            }
+
+            // 메인 페이지 전환 진행도
+            if (state === 'transitioning') {
+                transitionProgress += 0.015; 
+                if (transitionProgress >= 1) {
+                    transitionProgress = 1;
+                    state = 'main'; 
+                }
+            }
+
+            // 랜딩 페이지 전환 시 배경색 변경
+            let bgR = Math.round(lerp(10, 244, transitionProgress));
+            let bgG = Math.round(lerp(10, 244, transitionProgress));
+            let bgB = Math.round(lerp(12, 240, transitionProgress));
+            document.body.style.backgroundColor = `rgb(${bgR}, ${bgG}, ${bgB})`;
+            
+            ctx.clearRect(0, 0, w, h);
+
+            let time = Date.now() * 0.001;
+
+            // 캔버스(배경 점, 선)의 카메라 회전
+            let autoRotate = (state === 'intro') ? time * 0.2 : time * 0.05;
+            let targetCamY = mouse.normX * 0.8 + autoRotate;
+            let targetCamX = mouse.normY * 0.4;
+            camAngleY += (targetCamY - camAngleY) * 0.05;
+            camAngleX += (targetCamX - camAngleX) * 0.05;
+
+            // 배경 디자인 선
+            centerPoint.x = lerp(centerPoint.x, mouse.x, 0.05);
+            centerPoint.y = lerp(centerPoint.y, mouse.y, 0.05);
+            let lineR = lerp(255, 0, transitionProgress);
+            let lineAlpha = lerp(0.35, 0.25, transitionProgress); 
+            
+            ctx.strokeStyle = `rgba(${lineR}, ${lineR}, ${lineR}, ${lineAlpha})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(-w*0.2, -h*0.2); ctx.lineTo(centerPoint.x, centerPoint.y); ctx.lineTo(w*1.2, h*1.2);
+            ctx.moveTo(-w*0.2, h*1.2); ctx.lineTo(centerPoint.x, centerPoint.y); ctx.lineTo(w*1.2, -h*0.2);
+            ctx.moveTo(0, centerPoint.y); ctx.lineTo(w, centerPoint.y);
+            ctx.stroke();
+
+            // 메인 화면(랜딩 페이지)에서는 점들을 그리지 않음
+            if (state !== 'main') {
+                const focalLength = 600;
+                const cameraZ = 900; 
+
+                let pr = Math.round(lerp(255, 30, transitionProgress));
+                let pg = Math.round(lerp(255, 30, transitionProgress));
+                let pb = Math.round(lerp(255, 30, transitionProgress));
+
+                particles.forEach(p => {
+                    p.update(time);
+
+                    let rx1 = p.cx * Math.cos(camAngleY) - p.cz * Math.sin(camAngleY);
+                    let rz1 = p.cx * Math.sin(camAngleY) + p.cz * Math.cos(camAngleY);
+                    let ry2 = p.cy * Math.cos(camAngleX) - rz1 * Math.sin(camAngleX);
+                    let rz2 = p.cy * Math.sin(camAngleX) + rz1 * Math.cos(camAngleX);
+
+                    if (rz2 + cameraZ < 10) return;
+
+                    let scale = focalLength / (focalLength + rz2 + cameraZ);
+                    let screenX = w/2 + rx1 * scale;
+                    let screenY = h/2 + ry2 * scale;
+
+                    let depthAlpha = Math.min(1, Math.max(0.1, scale * 1.5));
+                    // 랜딩페이지로 넘어갈 때 점들이 완전히 페이드아웃 (사라짐)
+                    let alphaMultiplier = lerp(0.9, 0, transitionProgress);
+                    let alpha = depthAlpha * alphaMultiplier;
+                    
+                    if (alpha > 0.01) {
+                        ctx.fillStyle = `rgba(${pr}, ${pg}, ${pb}, ${alpha})`;
+                        ctx.beginPath();
+                        ctx.arc(screenX, screenY, Math.max(0.5, 2.5 * scale), 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                });
+            }
+        }
+        animate();
+
+        // --- 2. 인터랙션 플로우 트리거 ---
+
+        // 2-A: 인트로에서 캐러셀로 진입
+        function startCarousel() {
+            if(state !== 'intro') return;
+            state = 'carousel';
+            
+            document.getElementById('intro-ui').classList.add('hidden');
+            
+            const carouselUI = document.getElementById('carousel-ui');
+            carouselUI.classList.remove('hidden');
+            // display block이 렌더링된 후 투명도 효과를 주기 위해 짧은 지연시간 부여
+            setTimeout(() => {
+                carouselUI.classList.add('active');
+            }, 50);
+        }
+
+        // 2-B: 캐러셀 이미지 클릭 시 메인 랜딩 페이지로 진입
+        function enterMainPage() {
+            if(state !== 'carousel') return;
+            // 회전 모션이 진행 중일 때는 우발적 클릭을 방지 (필요 시)
+            if(carouselProgress < 0.5) return; 
+
+            state = 'transitioning';
+            
+            const carouselUI = document.getElementById('carousel-ui');
+            carouselUI.classList.remove('active');
+            setTimeout(() => {
+                carouselUI.classList.add('hidden');
+            }, 1000); // 페이드아웃 완료 후 숨김
+
+            document.getElementById('main-content').classList.add('visible');
+            window.scrollTo(0,0);
+        }
+
+        // --- 3. 실시간 시계 로직 ---
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds} KST`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // --- 4. 인터랙티브 리스트 갤러리 로직 (랜딩페이지 내) ---
+        const listItems = document.querySelectorAll('.project-list-item');
+        const previewImage = document.getElementById('preview-image');
+
+        listItems.forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                const imgUrl = this.getAttribute('data-img');
+                previewImage.style.opacity = 0;
+                setTimeout(() => {
+                    previewImage.style.backgroundImage = `url('${imgUrl}')`;
+                    previewImage.style.opacity = 1;
+                }, 150);
+            });
+        });
+    </script>
+</body>
+</html>

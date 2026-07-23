@@ -15,6 +15,7 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
   // Rotation states
   const targetRotation = useRef(0);
   const currentRotation = useRef(0);
+  const hoverVelocity = useRef(0);
   
   // Drag states
   const isDragging = useRef(false);
@@ -22,7 +23,7 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
   const isHovering = useRef(false);
 
   // Responsive radius for the 3D ring
-  const radius = typeof window !== 'undefined' && window.innerWidth < 768 ? 320 : 550;
+  const radius = typeof window !== 'undefined' && window.innerWidth < 768 ? 280 : 480;
   const items = projects; // Use projects from props
 
   useEffect(() => {
@@ -44,22 +45,55 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
     };
 
     const handlePointerMove = (e: PointerEvent) => {
-      if (!isDragging.current) return;
-      const delta = e.clientX - startX.current;
-      targetRotation.current += delta * 0.4; // 드래그 회전 감도
-      startX.current = e.clientX;
+      if (isDragging.current) {
+        hoverVelocity.current = 0;
+        const delta = e.clientX - startX.current;
+        targetRotation.current += delta * 0.4; // 드래그 회전 감도
+        startX.current = e.clientX;
+        return;
+      }
+
+      // 커서가 화면 가장자리에 있을 때의 회전 속도 계산
+      const x = e.clientX;
+      const width = window.innerWidth;
+      const margin = width * 0.25; // 화면 양쪽 25% 영역
+
+      if (x < margin) {
+        const factor = (margin - x) / margin;
+        hoverVelocity.current = factor * 1.5; // 왼쪽 가장자리 근처 속도 조절
+      } else if (x > width - margin) {
+        const factor = (x - (width - margin)) / margin;
+        hoverVelocity.current = -factor * 1.5; // 오른쪽 가장자리 근처 속도 조절
+      } else {
+        hoverVelocity.current = 0;
+      }
     };
 
     const handlePointerUp = () => {
       isDragging.current = false;
     };
 
+    const handlePointerLeave = () => {
+      hoverVelocity.current = 0;
+    };
+
     window.addEventListener('wheel', handleWheel, { passive: true });
     window.addEventListener('pointerdown', handlePointerDown);
     window.addEventListener('pointermove', handlePointerMove);
     window.addEventListener('pointerup', handlePointerUp);
+    document.addEventListener('pointerleave', handlePointerLeave);
 
     const animate = () => {
+      // 호버나 드래그 중이 아닐 때 가장 가까운 항목으로 스냅(정렬)
+      if (!isDragging.current && hoverVelocity.current === 0) {
+        const itemAngle = 360 / items.length;
+        const nearestSnap = Math.round(targetRotation.current / itemAngle) * itemAngle;
+        targetRotation.current += (nearestSnap - targetRotation.current) * 0.05;
+      }
+
+      // 호버에 의한 지속 회전 적용
+      targetRotation.current += hoverVelocity.current;
+
       // Lerp(보간)를 통해 회전이 부드럽게 감속하며 안착하도록 처리
       currentRotation.current += (targetRotation.current - currentRotation.current) * 0.04;
 
@@ -104,9 +138,18 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
       window.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
+      document.removeEventListener('pointerleave', handlePointerLeave);
       cancelAnimationFrame(animationFrameId);
     };
   }, [isActive, items.length, radius]);
+
+  useEffect(() => {
+    if (!isActive) {
+      cardsRef.current.forEach((card) => {
+        if (card) card.style.pointerEvents = 'none';
+      });
+    }
+  }, [isActive]);
 
   return (
     <div
@@ -116,41 +159,40 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
       style={{ perspective: '1500px' }} // 원근감 깊이 조정
     >
       {/* 백그라운드 갤러리 애니메이션 레이어 (클릭 불가, 작고 규칙적인 패턴 효과) */}
-      <div className="absolute inset-0 pointer-events-none z-[-1] overflow-hidden opacity-10 flex justify-center items-center gap-4 scale-[1.2]">
+      <div className="absolute inset-0 pointer-events-none z-[-1] overflow-hidden opacity-[0.08] flex justify-center items-center gap-6 scale-[1.1]">
         <style>{`
           @keyframes marqueeUp {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-50%); }
+            0% { transform: translateY(0) translateZ(0); }
+            100% { transform: translateY(-50%) translateZ(0); }
           }
           @keyframes marqueeDown {
-            0% { transform: translateY(-50%); }
-            100% { transform: translateY(0); }
+            0% { transform: translateY(-50%) translateZ(0); }
+            100% { transform: translateY(0) translateZ(0); }
           }
         `}</style>
-        {/* 여러 개의 열을 만들어 넓은 화면도 커버할 수 있도록 구성 */}
-        {[...Array(15)].map((_, colIndex) => {
-          // 각 열마다 시작 이미지를 다르게 배치
+        {/* DOM 개수를 절반(7열)으로 줄이고, 무거운 CSS 필터(blur, mix-blend-mode) 제거 후 하드웨어 가속 추가 */}
+        {[...Array(7)].map((_, colIndex) => {
           const offsetItems = [...items.slice(colIndex % items.length), ...items.slice(0, colIndex % items.length)];
-          // 끊김 없는 무한 스크롤을 위해 배열을 두 번 반복
           const columnItems = [...offsetItems, ...offsetItems];
 
           return (
             <div
               key={`col-${colIndex}`}
-              className="flex flex-col gap-4 w-[100px] opacity-80"
+              className="flex flex-col gap-6 w-[200px]"
               style={{
+                willChange: 'transform',
                 animation: `${colIndex % 2 === 0 ? 'marqueeUp' : 'marqueeDown'} ${40 + (colIndex % 3) * 10}s linear infinite`,
               }}
             >
               {columnItems.map((item, i) => (
                 <div
                   key={`bg-gallery-${colIndex}-${i}`}
-                  className="w-full h-[140px] rounded-sm overflow-hidden grayscale mix-blend-screen"
+                  className="w-full h-[280px] rounded-sm overflow-hidden"
                 >
-                  <img
+                  <ImageWithFallback
                     src={item.img}
                     alt=""
-                    className="w-full h-full object-cover blur-[1px] brightness-[0.5]"
+                    className="w-full h-full object-cover brightness-[0.4]"
                   />
                 </div>
               ))}
@@ -176,10 +218,10 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
               onMouseLeave={() => (isHovering.current = false)}
               className="absolute group cursor-pointer"
               style={{
-                width: '280px',
-                height: '380px',
-                marginLeft: '-140px',
-                marginTop: '-190px',
+                width: '240px',
+                height: '320px',
+                marginLeft: '-120px',
+                marginTop: '-160px',
                 // 초기 위치 렌더링
                 transform: `rotateY(${i * (360 / items.length)}deg) translateZ(${radius}px)`,
               }}
@@ -193,7 +235,16 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
               >
                 {'isLogo' in item && item.isLogo ? (
                   <>
-                    <span className="text-[100px] font-black tracking-tighter text-[#f4f4f0] opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700 ease-out select-none drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+                    <img 
+                      src="/about_logo.webp" 
+                      alt="ABOUT US" 
+                      className="w-full h-full scale-[1.2] object-contain filter brightness-0 invert opacity-80 group-hover:opacity-100 group-hover:scale-[1.35] transition-all duration-700 ease-out select-none drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                      }}
+                    />
+                    <span className="hidden text-[100px] font-black tracking-tighter text-[#f4f4f0] opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700 ease-out select-none drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]">
                       HMS
                     </span>
                   </>
@@ -202,13 +253,13 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
                     <ImageWithFallback
                       src={item.img}
                       alt={item.title}
-                      className="w-full h-full object-cover transition-all duration-700 ease-out grayscale group-hover:grayscale-0 brightness-[0.5] group-hover:brightness-110 group-hover:scale-110 pointer-events-none"
+                      className="w-full h-full object-cover transition-all duration-700 ease-out brightness-[0.5] group-hover:brightness-110 group-hover:scale-110 pointer-events-none"
                     />
                     <div className="absolute inset-0 bg-black/30 group-hover:bg-transparent transition-colors duration-500 border border-white/5 pointer-events-none" />
                   </>
                 )}
-                <div className="absolute bottom-6 left-6 z-20 transition-transform duration-[400ms] group-hover:-translate-y-2 pointer-events-none">
-                  <h3 className="text-[#f4f4f0] text-xl font-bold tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+                <div className="absolute bottom-6 left-6 right-6 z-20 transition-transform duration-[400ms] group-hover:-translate-y-2 pointer-events-none">
+                  <h3 className="text-[#f4f4f0] text-lg font-bold tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] break-words leading-tight">
                     {item.desc}
                   </h3>
                   <p className="text-[#f4f4f0]/80 text-[10px] font-mono uppercase tracking-widest mt-2 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
@@ -222,7 +273,7 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
       </div>
 
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-[#1a1a1a]/80 backdrop-blur-md px-6 py-3 rounded-full font-mono text-[10px] text-[#f4f4f0] tracking-[0.2em] uppercase z-50 pointer-events-none shadow-lg border border-white/10">
-        Drag or Scroll to Rotate
+        Hover edges or Drag to Rotate
       </div>
     </div>
   );

@@ -16,7 +16,7 @@ export default function App() {
   const [appState, setAppState] = useState<AppState>('intro');
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const { projects, pageData } = useFirebaseData();
+  const { projects, pageData, team, locations } = useFirebaseData();
 
   // Hidden admin shortcut (Ctrl/Cmd + Shift + A)
   useEffect(() => {
@@ -69,7 +69,7 @@ export default function App() {
   };
 
   return (
-    <div className="w-full h-full min-h-screen overflow-x-hidden selection:bg-black selection:text-white">
+    <div className="w-full min-h-screen overflow-x-hidden selection:bg-black selection:text-white">
       <CustomCursor />
       {/* 3D Canvas Background */}
       <CanvasBackground appState={appState} onTransitionComplete={completeTransition} />
@@ -78,10 +78,10 @@ export default function App() {
       <IntroUI onEnter={startCarousel} isHidden={appState !== 'intro'} />
 
       {/* 3D Carousel Selection */}
-      <CarouselUI isActive={appState === 'carousel'} onSelect={startTransition} projects={projects} />
+      <CarouselUI isActive={appState === 'carousel'} onSelect={startTransition} projects={projects.filter(p => p.showInCarousel !== false)} />
 
       {/* Main Landing Page Content */}
-      <MainContent isVisible={appState === 'main' || appState === 'transitioning'} onOpenAdmin={() => setAppState('admin')} onGoToCarousel={() => setAppState('carousel')} onSelectCategory={handleSelectCategory} projects={projects} pageData={pageData} />
+      <MainContent isVisible={appState === 'main' || appState === 'transitioning'} onOpenAdmin={() => setAppState('admin')} onGoToCarousel={() => setAppState('carousel')} onSelectCategory={handleSelectCategory} projects={projects} pageData={pageData} team={team} locations={locations} />
 
       {/* Project Detail Page Content */}
       <AnimatePresence>
@@ -106,7 +106,7 @@ export default function App() {
       {/* Admin Dashboard Overlay */}
       <AnimatePresence>
         {appState === 'admin' && (
-          <AdminDashboard key="admin" onClose={() => setAppState('main')} initialProjects={projects} initialPageData={pageData} />
+          <AdminDashboard key="admin" onClose={() => setAppState('main')} initialProjects={projects} initialPageData={pageData} initialTeam={team} initialLocations={locations} />
         )}
       </AnimatePresence>
     </div>

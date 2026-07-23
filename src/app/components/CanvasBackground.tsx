@@ -150,7 +150,10 @@ export function CanvasBackground({ appState, onTransitionComplete }: CanvasBackg
       let bgR = Math.round(lerp(10, 244, transitionProgress));
       let bgG = Math.round(lerp(10, 244, transitionProgress));
       let bgB = Math.round(lerp(12, 240, transitionProgress));
-      document.body.style.backgroundColor = `rgb(${bgR}, ${bgG}, ${bgB})`;
+      const newBg = `rgb(${bgR}, ${bgG}, ${bgB})`;
+      if (document.body.style.backgroundColor !== newBg) {
+        document.body.style.backgroundColor = newBg;
+      }
 
       pCtx.clearRect(0, 0, w, h);
       lCtx.clearRect(0, 0, w, h);
@@ -195,9 +198,10 @@ export function CanvasBackground({ appState, onTransitionComplete }: CanvasBackg
       let sinX = Math.sin(camAngleX);
 
       let pR = lerp(255, 0, transitionProgress);
-      let pAlpha = lerp(0.8, 0.2, transitionProgress);
+      let pAlpha = lerp(0.8, 0.0, transitionProgress); // Fade out dots completely on landing page
       pCtx.fillStyle = `rgba(${pR}, ${pR}, ${pR}, ${pAlpha})`;
 
+      if (pAlpha > 0.01) {
       particles.forEach((p) => {
         p.update(time, currentState);
 
@@ -222,6 +226,7 @@ export function CanvasBackground({ appState, onTransitionComplete }: CanvasBackg
           }
         }
       });
+      }
     };
 
     animate();

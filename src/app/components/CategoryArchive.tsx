@@ -47,32 +47,30 @@ export function CategoryArchive({ category, projects, onClose, onSelectProject }
           {category}
         </h1>
         
-        <ResponsiveMasonry columnsCountBreakPoints={{300: 2, 600: 3, 900: 4, 1200: 5}}>
-          <Masonry gutter="16px">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
             {filteredProjects.map((item, idx) => (
               <div 
-                key={item.id} 
+                key={item.uniqueId || item.id} 
                 onClick={() => onSelectProject(item)}
-                className={`group cursor-pointer flex flex-col animate-[fadeIn_0.5s_ease-out] hover:-translate-y-2 transition-transform duration-500 ${idx % 2 === 0 ? 'md:mt-12' : 'mt-0'}`}
+                className={`group cursor-pointer flex flex-col animate-[fadeIn_0.5s_ease-out] hover:-translate-y-2 transition-transform duration-500 ${idx % 2 !== 0 ? 'md:mt-12' : 'mt-0'}`}
               >
                 <div className="overflow-hidden mb-4 bg-gray-200 w-full relative" style={{ aspectRatio: idx % 3 === 0 ? '3/4' : idx % 3 === 1 ? '1/1' : '4/5' }}>
                   <ImageWithFallback 
                     src={item.img} 
                     alt={item.title} 
-                    className="w-full h-full object-cover grayscale transition-all duration-700 ease-out group-hover:scale-110 group-hover:grayscale-0"
+                    className="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-110"
                   />
                 </div>
-                <div className="font-mono text-[10px] sm:text-xs uppercase tracking-widest flex flex-col">
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="font-bold">0{idx + 1}.</span>
+                <div className="flex flex-col">
+                  <div className="font-mono text-[10px] sm:text-xs uppercase tracking-widest flex justify-between items-start mb-2">
+                    <span className="font-bold">0{idx + 1}</span>
                     <span className="text-[#1a1a1a]/60">{item.year}</span>
                   </div>
-                  <div className="font-semibold">{item.title}</div>
+                  <div className="font-sans text-sm font-medium tracking-normal text-[#1a1a1a] leading-snug break-keep">{item.title}</div>
                 </div>
               </div>
             ))}
-          </Masonry>
-        </ResponsiveMasonry>
+        </div>
       </div>
     </motion.div>
   );

@@ -15,15 +15,19 @@
     height: 100%;
     background-color: rgb(10, 10, 12);
     color: var(--text-color);
-    font-family: 'Inter', sans-serif;
+    font-family: 'Pretendard Variable', Pretendard, 'Inter', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
   }
 
   .font-mono {
-    font-family: 'Space Mono', monospace;
+    font-family: 'Space Mono', 'Pretendard Variable', Pretendard, monospace;
   }
   
   .font-sans {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Pretendard Variable', Pretendard, 'Inter', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif;
+  }
+
+  .font-serif {
+    font-family: 'Noto Serif KR', serif;
   }
 
   /* Custom Scrollbar */

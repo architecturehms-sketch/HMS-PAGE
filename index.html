@@ -10,13 +10,24 @@
       <meta name="robots" content="noindex, nofollow" />
       <style>html, body { height: 100%; margin: 0; } #root { height: 100%; }</style>
       
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+      <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
     </head>
 
     <body>
       
       <div id="root"></div>
+      <script>
+        window.addEventListener('error', function(e) {
+          fetch('http://localhost:9999', { method: 'POST', body: 'Error: ' + e.message + '\\n' + (e.error ? e.error.stack : '') });
+        });
+        window.addEventListener('unhandledrejection', function(e) {
+          fetch('http://localhost:9999', { method: 'POST', body: 'Unhandled Rejection: ' + e.reason });
+        });
+      </script>
       <script type="module" src="/src/main.tsx"></script>
-      
     </body>
   </html>
   

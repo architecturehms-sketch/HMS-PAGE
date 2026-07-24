@@ -79,9 +79,9 @@ export function MainContent({ isVisible, onOpenAdmin, onGoToCarousel, onSelectCa
             <button onClick={onGoToCarousel} className="hover:line-through transition-all whitespace-nowrap text-left flex items-center gap-2 pb-2 mb-2 border-b border-[#f4f4f0]/20">
               <span className="text-[14px]">⬡</span> 3D CAROUSEL
             </button>
-            <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab('about'); }} className={`hover:line-through transition-all whitespace-nowrap text-left ${activeTab === 'about' ? 'line-through opacity-50' : ''}`}>About Us</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab('index'); }} className={`hover:line-through transition-all whitespace-nowrap text-left ${activeTab === 'index' ? 'line-through opacity-50' : ''}`}>Selected Works</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab('people'); }} className={`hover:line-through transition-all whitespace-nowrap text-left ${activeTab === 'people' ? 'line-through opacity-50' : ''}`}>People</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab('about'); }} className={`hover:line-through transition-all whitespace-nowrap text-left ${activeTab === 'about' ? 'opacity-50' : ''}`}>About Us</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab('index'); }} className={`hover:line-through transition-all whitespace-nowrap text-left ${activeTab === 'index' ? 'opacity-50' : ''}`}>Selected Works</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab('people'); }} className={`hover:line-through transition-all whitespace-nowrap text-left ${activeTab === 'people' ? 'opacity-50' : ''}`}>People</a>
             <a href={`mailto:${pageData.contactEmail}`} className="hover:line-through transition-all whitespace-nowrap text-left">Contact</a>
           </nav>
           
@@ -178,8 +178,6 @@ export function MainContent({ isVisible, onOpenAdmin, onGoToCarousel, onSelectCa
                 {onOpenAdmin && (
                   <button onClick={onOpenAdmin} className="appearance-none bg-transparent p-0 border-none hover:underline underline-offset-4 text-[#1a1a1a]/40 hover:text-[#1a1a1a] text-[10px] sm:text-xs font-normal">ADMIN</button>
                 )}
-                <a href="#" className="hover:underline underline-offset-4 text-[10px] sm:text-xs font-normal">Instagram</a>
-                <a href="#" className="hover:underline underline-offset-4 text-[10px] sm:text-xs font-normal">LinkedIn</a>
               </div>
             </footer>
 

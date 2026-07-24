@@ -18,54 +18,79 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const { projects, pageData, team, locations } = useFirebaseData();
 
+  // Initialize and sync history state
+  useEffect(() => {
+    if (!window.history.state) {
+      window.history.replaceState({ appState: 'intro', selectedCategory: '', selectedProject: null }, '');
+    }
+    
+    const handlePopState = (e: PopStateEvent) => {
+      if (e.state && e.state.appState) {
+        setAppState(e.state.appState);
+        if (e.state.selectedCategory !== undefined) setSelectedCategory(e.state.selectedCategory);
+        if (e.state.selectedProject !== undefined) setSelectedProject(e.state.selectedProject);
+      }
+    };
+    
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const navigateTo = (stateObj: { appState: AppState, selectedCategory?: string, selectedProject?: any }) => {
+    setAppState(stateObj.appState);
+    if (stateObj.selectedCategory !== undefined) setSelectedCategory(stateObj.selectedCategory);
+    if (stateObj.selectedProject !== undefined) setSelectedProject(stateObj.selectedProject);
+    
+    // Merge with current state to retain values if not explicitly overwritten
+    const newState = {
+      appState: stateObj.appState,
+      selectedCategory: stateObj.selectedCategory !== undefined ? stateObj.selectedCategory : selectedCategory,
+      selectedProject: stateObj.selectedProject !== undefined ? stateObj.selectedProject : selectedProject
+    };
+    window.history.pushState(newState, '');
+  };
+
   // Hidden admin shortcut (Ctrl/Cmd + Shift + A)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
         e.preventDefault();
-        setAppState(prev => prev === 'admin' ? 'main' : 'admin');
+        if (appState === 'admin') window.history.back();
+        else navigateTo({ appState: 'admin' });
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [appState, selectedCategory, selectedProject]);
 
   const startCarousel = () => {
-    setAppState('carousel');
+    navigateTo({ appState: 'carousel' });
   };
 
   const startTransition = (item: any) => {
     if (item.isLogo) {
-      setSelectedProject(null);
-      setAppState('transitioning');
+      navigateTo({ appState: 'transitioning', selectedProject: null });
     } else {
-      setSelectedProject(item);
-      setAppState('project');
+      navigateTo({ appState: 'project', selectedProject: item });
     }
   };
 
   const completeTransition = () => {
     if (appState === 'transitioning') {
-      setAppState('main');
+      navigateTo({ appState: 'main' });
     }
   };
 
   const handleSelectCategory = (category: string) => {
-    setSelectedCategory(category);
-    setAppState('category');
+    navigateTo({ appState: 'category', selectedCategory: category });
   };
 
   const handleSelectProjectFromCategory = (item: any) => {
-    setSelectedProject(item);
-    setAppState('project');
+    navigateTo({ appState: 'project', selectedProject: item });
   };
   
   const handleCloseProject = () => {
-    if (selectedCategory) {
-      setAppState('category');
-    } else {
-      setAppState('carousel');
-    }
+    window.history.back();
   };
 
   return (
@@ -97,7 +122,7 @@ export default function App() {
             key="category-archive"
             category={selectedCategory} 
             projects={projects} 
-            onClose={() => { setSelectedCategory(''); setAppState('main'); }} 
+            onClose={() => window.history.back()} 
             onSelectProject={handleSelectProjectFromCategory}
           />
         )}
@@ -106,7 +131,7 @@ export default function App() {
       {/* Admin Dashboard Overlay */}
       <AnimatePresence>
         {appState === 'admin' && (
-          <AdminDashboard key="admin" onClose={() => setAppState('main')} initialProjects={projects} initialPageData={pageData} initialTeam={team} initialLocations={locations} />
+          <AdminDashboard key="admin" onClose={() => window.history.back()} initialProjects={projects} initialPageData={pageData} initialTeam={team} initialLocations={locations} />
         )}
       </AnimatePresence>
     </div>

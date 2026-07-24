@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { motion, useScroll, useTransform } from 'motion/react';
-import { X } from 'lucide-react';
+import { X, ArrowLeft } from 'lucide-react';
 
 import { Project } from '../../hooks/useFirebaseData';
 
@@ -95,7 +95,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
           onClick={onClose}
           className="pointer-events-auto flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] hover:opacity-50 transition-opacity"
         >
-          [ CLOSE ] <X size={16} />
+          <ArrowLeft size={16} /> [ BACK ]
         </button>
       </div>
 
@@ -241,9 +241,9 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
           </div>
           <button 
             onClick={onClose}
-            className="font-mono text-xs tracking-[0.2em] uppercase hover:line-through transition-all text-[#f4f4f0]"
+            className="font-mono text-xs tracking-[0.2em] uppercase flex items-center gap-2 hover:line-through transition-all text-[#f4f4f0]"
           >
-            BACK TO INDEX
+            <ArrowLeft size={14} /> [ BACK ]
           </button>
         </div>
       </div>

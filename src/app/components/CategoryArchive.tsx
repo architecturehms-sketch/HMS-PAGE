@@ -3,7 +3,7 @@ import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Project } from '../../hooks/useFirebaseData';
 import { motion } from 'motion/react';
-import { X } from 'lucide-react';
+import { X, ArrowLeft } from 'lucide-react';
 
 interface CategoryArchiveProps {
   category: string;
@@ -38,7 +38,7 @@ export function CategoryArchive({ category, projects, onClose, onSelectProject }
           onClick={onClose}
           className="pointer-events-auto flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] hover:opacity-50 transition-opacity"
         >
-          [ CLOSE ] <X size={16} />
+          <ArrowLeft size={16} /> [ BACK ]
         </button>
       </div>
 

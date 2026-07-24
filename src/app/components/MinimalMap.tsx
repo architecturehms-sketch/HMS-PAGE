@@ -85,13 +85,13 @@ export const MinimalMap = React.memo(function MinimalMap({ locations = [] }: Min
 
             {locations.map(({ name, coordinates }) => (
               <Marker key={name} coordinates={coordinates as [number, number]}>
-                <circle r={6 / position.zoom} fill="#f4f4f0" />
-                <circle r={15 / position.zoom} fill="#f4f4f0" opacity={0.2} className="animate-ping" style={{ animationDuration: '3s' }} />
-                {position.zoom > 3 && (
+                <circle r={3 / position.zoom} fill="#f4f4f0" />
+                <circle r={10 / position.zoom} fill="#f4f4f0" opacity={0.2} className="animate-ping" style={{ animationDuration: '3s' }} />
+                {position.zoom > 10 && (
                   <text
                     textAnchor="middle"
-                    y={-10 / position.zoom}
-                    style={{ fontFamily: "monospace", fontSize: `${20 / position.zoom}px`, fill: "#f4f4f0", opacity: 0.8 }}
+                    y={-8 / position.zoom}
+                    style={{ fontFamily: "monospace", fontSize: `${10 / position.zoom}px`, fill: "#f4f4f0", opacity: 0.8 }}
                   >
                     {name}
                   </text>

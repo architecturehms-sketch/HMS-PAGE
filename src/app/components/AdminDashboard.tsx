@@ -956,6 +956,15 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
                                 {uploading ? 'UPLOADING...' : 'UPLOAD VIDEO'}
                                 <input type="file" className="hidden" accept="video/*" disabled={uploading} onChange={(e) => handleFileUpload(e, 'video')} />
                               </label>
+                              {editingProject.videoUrl && (
+                                <button 
+                                  type="button" 
+                                  onClick={() => setEditingProject({...editingProject, videoUrl: ''})}
+                                  className="text-[10px] uppercase tracking-widest text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-400 px-3 py-1 transition-colors"
+                                >
+                                  REMOVE VIDEO
+                                </button>
+                              )}
                             </div>
                           </div>
                           <div className="w-24 h-16 border border-[#f4f4f0]/30 flex items-center justify-center bg-[#1a1a1a] overflow-hidden shrink-0">

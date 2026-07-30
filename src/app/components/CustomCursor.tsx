@@ -27,7 +27,7 @@ export const CustomCursor = () => {
     <>
       {/* Primary Dot */}
       <motion.div
-        className="fixed top-0 left-0 w-1.5 h-1.5 bg-white rounded-full pointer-events-none z-[9999] mix-blend-difference"
+        className="hidden md:block fixed top-0 left-0 w-1.5 h-1.5 bg-white rounded-full pointer-events-none z-[9999] mix-blend-difference"
         animate={{
           x: mousePosition.x - 3,
           y: mousePosition.y - 3,
@@ -37,7 +37,7 @@ export const CustomCursor = () => {
       
       {/* Trailing Circle */}
       <motion.div
-        className="fixed top-0 left-0 w-8 h-8 border border-white rounded-full pointer-events-none z-[9998] mix-blend-difference"
+        className="hidden md:block fixed top-0 left-0 w-8 h-8 border border-white rounded-full pointer-events-none z-[9998] mix-blend-difference"
         style={{
           x: cursorXSpring,
           y: cursorYSpring,

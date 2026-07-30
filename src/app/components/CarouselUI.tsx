@@ -24,7 +24,7 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
 
   // Responsive variables
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  const radius = isMobile ? 220 : 480;
+  const radius = isMobile ? 320 : 480; // 늘어난 반지름으로 카드 간격 확보
   const cardWidth = isMobile ? 160 : 240;
   const cardHeight = isMobile ? 240 : 320;
   const items = projects; // Use projects from props
@@ -160,7 +160,7 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
 
   return (
     <div
-      className={`fixed inset-0 w-screen h-screen z-40 transition-opacity duration-1000 overflow-hidden select-none touch-none ${
+      className={`fixed inset-0 w-screen h-[100dvh] z-40 transition-opacity duration-1000 overflow-hidden select-none touch-none ${
         isActive ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
       }`}
       style={{ perspective: '1500px' }} // 원근감 깊이 조정
@@ -266,7 +266,7 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
                   </>
                 )}
                 <div className="absolute bottom-6 left-6 right-6 z-20 transition-transform duration-[400ms] group-hover:-translate-y-2 pointer-events-none">
-                  <h3 className="text-[#f4f4f0] text-lg font-bold tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] break-words leading-tight">
+                  <h3 className="text-[#f4f4f0] text-sm md:text-lg font-bold tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] break-words leading-tight">
                     {item.desc}
                   </h3>
                   <p className="text-[#f4f4f0]/80 text-[10px] font-mono uppercase tracking-widest mt-2 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">

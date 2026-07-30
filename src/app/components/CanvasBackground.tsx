@@ -175,25 +175,27 @@ export function CanvasBackground({ appState, onTransitionComplete }: CanvasBackg
       centerPoint.x = lerp(centerPoint.x, mouse.x, 0.12); // Increased response speed (was 0.05)
       centerPoint.y = lerp(centerPoint.y, mouse.y, 0.12); // Increased response speed (was 0.05)
       
-      let lineR = lerp(255, 0, transitionProgress);
-      let lineAlpha = lerp(0.35, 1.0, transitionProgress); // Darker and completely visible on landing page
+      if (!isMobile) {
+        let lineR = lerp(255, 0, transitionProgress);
+        let lineAlpha = lerp(0.35, 1.0, transitionProgress); // Darker and completely visible on landing page
 
-      lCtx.strokeStyle = `rgba(${lineR}, ${lineR}, ${lineR}, ${lineAlpha})`;
-      lCtx.lineWidth = 0.5; // Constant thickness, even thinner
-      
-      lCtx.beginPath();
-      // 상단 수직선 (중앙에서 위쪽으로)
-      lCtx.moveTo(centerPoint.x, centerPoint.y);
-      lCtx.lineTo(centerPoint.x, -h * 0.2);
-      
-      // 좌측 하단 대각선 (중앙에서 왼쪽 아래로)
-      lCtx.moveTo(centerPoint.x, centerPoint.y);
-      lCtx.lineTo(-w * 0.2, h * 1.2);
-      
-      // 우측 하단 대각선 (중앙에서 오른쪽 아래로)
-      lCtx.moveTo(centerPoint.x, centerPoint.y);
-      lCtx.lineTo(w * 1.2, h * 1.2);
-      lCtx.stroke();
+        lCtx.strokeStyle = `rgba(${lineR}, ${lineR}, ${lineR}, ${lineAlpha})`;
+        lCtx.lineWidth = 0.5; // Constant thickness, even thinner
+        
+        lCtx.beginPath();
+        // 상단 수직선 (중앙에서 위쪽으로)
+        lCtx.moveTo(centerPoint.x, centerPoint.y);
+        lCtx.lineTo(centerPoint.x, -h * 0.2);
+        
+        // 좌측 하단 대각선 (중앙에서 왼쪽 아래로)
+        lCtx.moveTo(centerPoint.x, centerPoint.y);
+        lCtx.lineTo(-w * 0.2, h * 1.2);
+        
+        // 우측 하단 대각선 (중앙에서 오른쪽 아래로)
+        lCtx.moveTo(centerPoint.x, centerPoint.y);
+        lCtx.lineTo(w * 1.2, h * 1.2);
+        lCtx.stroke();
+      }
 
       let cosY = Math.cos(camAngleY);
       let sinY = Math.sin(camAngleY);

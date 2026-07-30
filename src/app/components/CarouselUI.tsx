@@ -22,8 +22,11 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
   const startX = useRef(0);
   const isHovering = useRef(false);
 
-  // Responsive radius for the 3D ring
-  const radius = typeof window !== 'undefined' && window.innerWidth < 768 ? 280 : 480;
+  // Responsive variables
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const radius = isMobile ? 220 : 480;
+  const cardWidth = isMobile ? 160 : 240;
+  const cardHeight = isMobile ? 240 : 320;
   const items = projects; // Use projects from props
 
   useEffect(() => {
@@ -48,10 +51,14 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
       if (isDragging.current) {
         hoverVelocity.current = 0;
         const delta = e.clientX - startX.current;
-        targetRotation.current += delta * 0.4; // 드래그 회전 감도
+        const sensitivity = isMobile ? 0.8 : 0.4; // 드래그 회전 감도 (모바일은 더 민감하게)
+        targetRotation.current += delta * sensitivity;
         startX.current = e.clientX;
         return;
       }
+
+      // 모바일에서는 가장자리 호버 회전 효과 비활성화 (드래그만 사용)
+      if (isMobile) return;
 
       // 커서가 화면 가장자리에 있을 때의 회전 속도 계산
       const x = e.clientX;
@@ -141,7 +148,7 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
       document.removeEventListener('pointerleave', handlePointerLeave);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [isActive, items.length, radius]);
+  }, [isActive, items.length, radius, isMobile]);
 
   useEffect(() => {
     if (!isActive) {
@@ -158,8 +165,8 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
       }`}
       style={{ perspective: '1500px' }} // 원근감 깊이 조정
     >
-      {/* 백그라운드 갤러리 애니메이션 레이어 (클릭 불가, 작고 규칙적인 패턴 효과) */}
-      <div className="absolute inset-0 pointer-events-none z-[-1] overflow-hidden opacity-[0.08] flex justify-center items-center gap-6 scale-[1.1]">
+      {/* 백그라운드 갤러리 애니메이션 레이어 (모바일에서는 숨김 처리하여 성능 최적화) */}
+      <div className="hidden md:flex absolute inset-0 pointer-events-none z-[-1] overflow-hidden opacity-[0.08] justify-center items-center gap-6 scale-[1.1]">
         <style>{`
           @keyframes marqueeUp {
             0% { transform: translateY(0) translateZ(0); }
@@ -218,10 +225,10 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
               onMouseLeave={() => (isHovering.current = false)}
               className="absolute group cursor-pointer"
               style={{
-                width: '240px',
-                height: '320px',
-                marginLeft: '-120px',
-                marginTop: '-160px',
+                width: `${cardWidth}px`,
+                height: `${cardHeight}px`,
+                marginLeft: `-${cardWidth / 2}px`,
+                marginTop: `-${cardHeight / 2}px`,
                 // 초기 위치 렌더링
                 transform: `rotateY(${i * (360 / items.length)}deg) translateZ(${radius}px)`,
               }}
@@ -272,8 +279,8 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
         </div>
       </div>
 
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-[#1a1a1a]/80 backdrop-blur-md px-6 py-3 rounded-full font-mono text-[10px] text-[#f4f4f0] tracking-[0.2em] uppercase z-50 pointer-events-none shadow-lg border border-white/10">
-        Hover edges or Drag to Rotate
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-[#1a1a1a]/80 backdrop-blur-md px-6 py-3 rounded-full font-mono text-[10px] text-[#f4f4f0] tracking-[0.2em] uppercase z-50 pointer-events-none shadow-lg border border-white/10 whitespace-nowrap">
+        {isMobile ? 'Swipe to Rotate' : 'Hover edges or Drag to Rotate'}
       </div>
     </div>
   );

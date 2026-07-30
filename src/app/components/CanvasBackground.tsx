@@ -62,6 +62,9 @@ export function CanvasBackground({ appState, onTransitionComplete }: CanvasBackg
     const particleCount = 2000;
     const particles: any[] = [];
 
+    const isMobile = window.innerWidth < 768;
+    const globalScale = isMobile ? 0.55 : 1.0;
+
     class Particle {
       index: number;
       cx: number;
@@ -73,9 +76,9 @@ export function CanvasBackground({ appState, onTransitionComplete }: CanvasBackg
 
       constructor(index: number) {
         this.index = index;
-        this.cx = (Math.random() - 0.5) * 1000;
-        this.cy = (Math.random() - 0.5) * 1000;
-        this.cz = (Math.random() - 0.5) * 1000;
+        this.cx = (Math.random() - 0.5) * 1000 * globalScale;
+        this.cy = (Math.random() - 0.5) * 1000 * globalScale;
+        this.cz = (Math.random() - 0.5) * 1000 * globalScale;
         this.calcArchTarget();
       }
 
@@ -85,7 +88,7 @@ export function CanvasBackground({ appState, onTransitionComplete }: CanvasBackg
         let gy = Math.floor(this.index / gridSize) % gridSize;
         let gz = Math.floor(this.index / (gridSize * gridSize));
 
-        let spacing = 45;
+        let spacing = 45 * globalScale;
 
         let distToCenter = Math.sqrt(Math.pow(gx - 7, 2) + Math.pow(gz - 7, 2));
         if (distToCenter < 3 && gy < 10) {
@@ -100,7 +103,7 @@ export function CanvasBackground({ appState, onTransitionComplete }: CanvasBackg
       update(time: number, currentState: AppState) {
         let phi = Math.acos(-1 + (2 * this.index) / particleCount);
         let theta = Math.sqrt(particleCount * Math.PI) * phi;
-        let r = 550 + Math.sin(phi * 5 + time * 1.5) * 100 + Math.cos(theta * 3 + time) * 100;
+        let r = (550 + Math.sin(phi * 5 + time * 1.5) * 100 + Math.cos(theta * 3 + time) * 100) * globalScale;
         let tx = r * Math.cos(theta) * Math.sin(phi);
         let ty = r * Math.sin(theta) * Math.sin(phi);
         let tz = r * Math.cos(phi);

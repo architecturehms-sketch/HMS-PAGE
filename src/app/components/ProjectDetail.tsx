@@ -16,7 +16,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
-  const [popupImage, setPopupImage] = useState<string | null>(null);
+  const [popupIndex, setPopupIndex] = useState<number | null>(null);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollContainerRef.current) return;
@@ -215,7 +215,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                   key={`gallery-${index}`} 
                   className="w-[85vw] md:w-[75vw] shrink-0 snap-center border border-[#f4f4f0]/10"
                   onClick={() => {
-                    if (window.innerWidth < 768) setPopupImage(url);
+                    if (window.innerWidth < 768) setPopupIndex(index);
                   }}
                 >
                   <ParallaxImage src={url} alt={`Gallery Detail ${index + 3}`} speed={0.02} />
@@ -257,31 +257,46 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
 
       {/* Mobile Image Popup */}
       <AnimatePresence>
-        {popupImage && (
+        {popupIndex !== null && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-4 md:hidden touch-none"
-            onClick={() => setPopupImage(null)}
+            className="fixed inset-0 z-[200] bg-black/95 md:hidden"
           >
             <button 
-              className="absolute top-6 right-6 text-white p-2 hover:opacity-50 transition-opacity"
-              onClick={() => setPopupImage(null)}
+              className="absolute top-6 right-6 text-white p-2 hover:opacity-50 transition-opacity z-10"
+              onClick={() => setPopupIndex(null)}
             >
               <X size={24} />
             </button>
-            <motion.img 
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.95 }}
-              transition={{ duration: 0.3 }}
-              src={popupImage} 
-              alt="Popup" 
-              className="w-full h-auto max-h-[90vh] object-contain"
-              onClick={(e) => e.stopPropagation()}
-            />
+            <div 
+              className="w-full h-full overflow-x-auto overflow-y-hidden flex flex-nowrap snap-x snap-mandatory hide-scrollbar"
+              ref={(el) => {
+                if (el && popupIndex !== null) {
+                  if (!el.dataset.scrolled) {
+                    el.scrollLeft = popupIndex * window.innerWidth;
+                    el.dataset.scrolled = "true";
+                  }
+                }
+              }}
+              onClick={() => setPopupIndex(null)}
+            >
+              {project.detailImages?.slice(2).filter(url => url).map((url, idx) => (
+                <div 
+                  key={`popup-${idx}`} 
+                  className="w-screen h-full shrink-0 snap-center flex items-center justify-center p-4"
+                >
+                  <img 
+                    src={url} 
+                    alt={`Popup ${idx + 1}`} 
+                    className="w-full h-auto max-h-[90vh] object-contain"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+              ))}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

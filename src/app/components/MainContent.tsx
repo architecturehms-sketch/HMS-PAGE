@@ -87,7 +87,7 @@ export function MainContent({ isVisible, onOpenAdmin, onGoToCarousel, onSelectCa
             </div>
           </nav>
           
-          <div className="order-3 w-full flex flex-col md:mt-auto">
+          <div className="order-3 w-full hidden md:flex flex-col md:mt-auto">
             <MinimalMap locations={locations} />
           </div>
         </aside>
@@ -167,6 +167,11 @@ export function MainContent({ isVisible, onOpenAdmin, onGoToCarousel, onSelectCa
                     ))}
                   </div>
                 </section>
+
+                {/* Mobile Map (Landing Page Only) */}
+                <div className="md:hidden w-full bg-[#1a1a1a] px-4 sm:px-6 pb-8 pt-2">
+                  <MinimalMap locations={locations} />
+                </div>
               </>
             )}
 

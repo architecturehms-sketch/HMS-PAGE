@@ -59,11 +59,12 @@ export function CanvasBackground({ appState, onTransitionComplete }: CanvasBackg
 
     const lerp = (a: number, b: number, n: number) => (1 - n) * a + n * b;
 
-    const particleCount = 2000;
+    const isMobile = window.innerWidth < 768;
+    const particleCount = isMobile ? 500 : 2000;
     const particles: any[] = [];
 
-    const isMobile = window.innerWidth < 768;
     const globalScale = isMobile ? 0.55 : 1.0;
+    const gridSize = isMobile ? 8 : 14;
 
     class Particle {
       index: number;
@@ -83,21 +84,26 @@ export function CanvasBackground({ appState, onTransitionComplete }: CanvasBackg
       }
 
       calcArchTarget() {
-        let gridSize = 14;
         let gx = this.index % gridSize;
         let gy = Math.floor(this.index / gridSize) % gridSize;
         let gz = Math.floor(this.index / (gridSize * gridSize));
 
-        let spacing = 45 * globalScale;
+        let spacing = (isMobile ? 65 : 45) * globalScale;
 
-        let distToCenter = Math.sqrt(Math.pow(gx - 7, 2) + Math.pow(gz - 7, 2));
-        if (distToCenter < 3 && gy < 10) {
-          gy += 8;
+        let center = gridSize / 2;
+        let distToCenter = Math.sqrt(Math.pow(gx - center, 2) + Math.pow(gz - center, 2));
+        
+        let archWidth = isMobile ? 1.5 : 3;
+        let archHeight = isMobile ? 5 : 10;
+        let archLift = isMobile ? 4 : 8;
+
+        if (distToCenter < archWidth && gy < archHeight) {
+          gy += archLift;
         }
 
-        this.targetArchX = (gx - gridSize / 2) * spacing;
-        this.targetArchY = (gy - gridSize / 2) * spacing * 1.5;
-        this.targetArchZ = (gz - gridSize / 2) * spacing;
+        this.targetArchX = (gx - center) * spacing;
+        this.targetArchY = (gy - center) * spacing * 1.5;
+        this.targetArchZ = (gz - center) * spacing;
       }
 
       update(time: number, currentState: AppState) {

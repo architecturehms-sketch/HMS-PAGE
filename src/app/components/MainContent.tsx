@@ -75,18 +75,14 @@ export function MainContent({ isVisible, onOpenAdmin, onGoToCarousel, onSelectCa
             />
           </div>
           
-          <nav className="font-mono text-[10px] sm:text-xs uppercase flex flex-col tracking-widest mt-2 shrink-0 text-[#f4f4f0] mb-8">
-            <div className="flex flex-col border-b border-[#f4f4f0]/20 pb-3 md:border-none md:pb-0">
-              <button onClick={onGoToCarousel} className="hover:line-through transition-all whitespace-nowrap text-left flex items-center gap-2 pb-2 mb-2 border-b-0 md:border-b border-[#f4f4f0]/20">
-                <span className="text-[14px]">⬡</span> 3D CAROUSEL
-              </button>
-              <div className="flex flex-wrap md:flex-col gap-x-4 gap-y-2 md:gap-2 pt-1 md:pt-0">
-                <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab('about'); }} className={`hover:line-through transition-all whitespace-nowrap text-left ${activeTab === 'about' ? 'opacity-50' : ''}`}>About Us</a>
-                <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab('index'); }} className={`hover:line-through transition-all whitespace-nowrap text-left ${activeTab === 'index' ? 'opacity-50' : ''}`}>Selected Works</a>
-                <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab('people'); }} className={`hover:line-through transition-all whitespace-nowrap text-left ${activeTab === 'people' ? 'opacity-50' : ''}`}>People</a>
-                <a href={`mailto:${pageData.contactEmail}`} className="hover:line-through transition-all whitespace-nowrap text-left">Contact</a>
-              </div>
-            </div>
+          <nav className="font-mono text-[10px] sm:text-xs uppercase flex flex-row md:flex-col gap-4 md:gap-2 tracking-widest mt-2 shrink-0 overflow-x-auto pb-2 md:pb-0 hide-scrollbar text-[#f4f4f0] mb-8">
+            <button onClick={onGoToCarousel} className="hover:line-through transition-all whitespace-nowrap text-left flex items-center gap-2 pb-2 mb-2 border-b border-[#f4f4f0]/20">
+              <span className="text-[14px]">⬡</span> 3D CAROUSEL
+            </button>
+            <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab('about'); }} className={`hover:line-through transition-all whitespace-nowrap text-left ${activeTab === 'about' ? 'opacity-50' : ''}`}>About Us</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab('index'); }} className={`hover:line-through transition-all whitespace-nowrap text-left ${activeTab === 'index' ? 'opacity-50' : ''}`}>Selected Works</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); setActiveTab('people'); }} className={`hover:line-through transition-all whitespace-nowrap text-left ${activeTab === 'people' ? 'opacity-50' : ''}`}>People</a>
+            <a href={`mailto:${pageData.contactEmail}`} className="hover:line-through transition-all whitespace-nowrap text-left">Contact</a>
           </nav>
           
           <MinimalMap locations={locations} />

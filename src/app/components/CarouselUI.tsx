@@ -265,8 +265,8 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
                     <div className="absolute inset-0 bg-black/30 group-hover:bg-transparent transition-colors duration-500 border border-white/5 pointer-events-none" />
                   </>
                 )}
-                <div className="absolute bottom-6 left-6 right-6 z-20 transition-transform duration-[400ms] group-hover:-translate-y-2 pointer-events-none">
-                  <h3 className="text-[#f4f4f0] text-sm md:text-lg font-bold tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] break-words leading-tight">
+                <div className="absolute bottom-4 left-4 right-4 md:bottom-6 md:left-6 md:right-6 z-20 transition-transform duration-[400ms] group-hover:-translate-y-2 pointer-events-none">
+                  <h3 className="text-[#f4f4f0] text-xs md:text-lg font-bold tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] break-words leading-tight">
                     {item.desc}
                   </h3>
                   <p className="text-[#f4f4f0]/80 text-[10px] font-mono uppercase tracking-widest mt-2 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">

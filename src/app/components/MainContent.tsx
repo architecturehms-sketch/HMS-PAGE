@@ -66,7 +66,7 @@ export function MainContent({ isVisible, onOpenAdmin, onGoToCarousel, onSelectCa
         
         {/* Left Sidebar */}
         <aside className="w-full md:w-[25vw] h-auto md:h-screen md:fixed md:top-0 md:left-0 border-b md:border-b-0 md:border-r border-[#f4f4f0]/20 p-4 sm:p-6 md:p-8 flex flex-col z-20 overflow-y-visible md:overflow-y-auto hide-scrollbar shrink-0 bg-[#1a1a1a]">
-          <div className="flex justify-between items-start mb-12 shrink-0">
+          <div className="flex justify-between items-start mb-8 md:mb-12 shrink-0 order-1 md:order-1">
             <img 
               src="/batch_logo.webp" 
               alt="HMS Architecture" 
@@ -75,7 +75,8 @@ export function MainContent({ isVisible, onOpenAdmin, onGoToCarousel, onSelectCa
             />
           </div>
           
-          <nav className="font-mono text-[10px] sm:text-xs uppercase flex flex-col tracking-widest mt-2 shrink-0 text-[#f4f4f0] mb-2 md:mb-8 w-full">            <button onClick={onGoToCarousel} className="hover:line-through transition-all whitespace-nowrap text-left flex items-center gap-2 pb-2 mb-4 md:mb-2 border-b border-[#f4f4f0]/20 self-start md:self-stretch pr-4 md:pr-0">
+          <nav className="font-mono text-[10px] sm:text-xs uppercase flex flex-col tracking-widest mt-8 md:mt-2 shrink-0 text-[#f4f4f0] mb-2 md:mb-8 w-full order-3 md:order-2">
+            <button onClick={onGoToCarousel} className="hover:line-through transition-all whitespace-nowrap text-left flex items-center gap-2 pb-2 mb-4 md:mb-2 border-b border-[#f4f4f0]/20 self-start md:self-stretch pr-4 md:pr-0">
               <span className="text-[14px]">⬡</span> 3D CAROUSEL
             </button>
             <div className="flex flex-wrap md:flex-col gap-x-4 gap-y-2 md:gap-2 w-full">
@@ -86,7 +87,9 @@ export function MainContent({ isVisible, onOpenAdmin, onGoToCarousel, onSelectCa
             </div>
           </nav>
           
-          <MinimalMap locations={locations} />
+          <div className="order-2 md:order-3 w-full flex flex-col md:mt-auto">
+            <MinimalMap locations={locations} />
+          </div>
         </aside>
 
         {/* Right Content */}

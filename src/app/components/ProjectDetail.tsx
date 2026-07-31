@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { motion, useScroll, useTransform } from 'motion/react';
+import { motion, useScroll, useTransform, AnimatePresence } from 'motion/react';
 import { X, ArrowLeft } from 'lucide-react';
 
 import { Project } from '../../hooks/useFirebaseData';
@@ -16,6 +16,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+  const [popupImage, setPopupImage] = useState<string | null>(null);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollContainerRef.current) return;
@@ -210,7 +211,13 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
               }`}
             >
               {project.detailImages.slice(2).filter(url => url).map((url, index) => (
-                <div key={`gallery-${index}`} className="w-[85vw] md:w-[75vw] shrink-0 snap-center border border-[#f4f4f0]/10">
+                <div 
+                  key={`gallery-${index}`} 
+                  className="w-[85vw] md:w-[75vw] shrink-0 snap-center border border-[#f4f4f0]/10"
+                  onClick={() => {
+                    if (window.innerWidth < 768) setPopupImage(url);
+                  }}
+                >
                   <ParallaxImage src={url} alt={`Gallery Detail ${index + 3}`} speed={0.02} />
                 </div>
               ))}
@@ -247,6 +254,37 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
           </button>
         </div>
       </div>
+
+      {/* Mobile Image Popup */}
+      <AnimatePresence>
+        {popupImage && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-4 md:hidden touch-none"
+            onClick={() => setPopupImage(null)}
+          >
+            <button 
+              className="absolute top-6 right-6 text-white p-2 hover:opacity-50 transition-opacity"
+              onClick={() => setPopupImage(null)}
+            >
+              <X size={24} />
+            </button>
+            <motion.img 
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              transition={{ duration: 0.3 }}
+              src={popupImage} 
+              alt="Popup" 
+              className="w-full h-auto max-h-[90vh] object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

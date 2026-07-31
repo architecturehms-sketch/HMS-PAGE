@@ -43,7 +43,7 @@ export function CategoryArchive({ category, projects, onClose, onSelectProject }
       </div>
 
       <div className="pt-32 px-6 md:px-12 pb-12 min-h-screen">
-        <h1 className="text-[12vw] md:text-[8vw] font-black uppercase leading-[0.85] tracking-tighter text-[#1a1a1a] mb-12 border-b border-[#1a1a1a]/20 pb-6">
+        <h1 className="text-[9vw] sm:text-[10vw] md:text-[8vw] font-black uppercase leading-[0.9] tracking-tighter text-[#1a1a1a] mb-12 border-b border-[#1a1a1a]/20 pb-6 break-words">
           {category}
         </h1>
         

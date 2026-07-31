@@ -75,7 +75,7 @@ export function MainContent({ isVisible, onOpenAdmin, onGoToCarousel, onSelectCa
             />
           </div>
           
-          <nav className="font-mono text-[10px] sm:text-xs uppercase flex flex-col tracking-widest mt-8 md:mt-2 shrink-0 text-[#f4f4f0] mb-2 md:mb-8 w-full order-3 md:order-2">
+          <nav className="font-mono text-[10px] sm:text-xs uppercase flex flex-col tracking-widest mt-2 shrink-0 text-[#f4f4f0] mb-2 md:mb-8 w-full order-2">
             <button onClick={onGoToCarousel} className="hover:line-through transition-all whitespace-nowrap text-left flex items-center gap-2 pb-2 mb-4 md:mb-2 border-b border-[#f4f4f0]/20 self-start md:self-stretch pr-4 md:pr-0">
               <span className="text-[14px]">⬡</span> 3D CAROUSEL
             </button>
@@ -87,7 +87,7 @@ export function MainContent({ isVisible, onOpenAdmin, onGoToCarousel, onSelectCa
             </div>
           </nav>
           
-          <div className="order-2 md:order-3 w-full flex flex-col md:mt-auto">
+          <div className="order-3 w-full flex flex-col md:mt-auto">
             <MinimalMap locations={locations} />
           </div>
         </aside>

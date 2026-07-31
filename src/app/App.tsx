@@ -13,7 +13,9 @@ import { CategoryArchive } from './components/CategoryArchive';
 export type AppState = 'intro' | 'carousel' | 'transitioning' | 'main' | 'project' | 'admin' | 'category';
 
 export default function App() {
-  const [appState, setAppState] = useState<AppState>('intro');
+  const [appState, setAppState] = useState<AppState>(() => {
+    return (typeof window !== 'undefined' && window.innerWidth < 768) ? 'carousel' : 'intro';
+  });
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const { projects, pageData, team, locations } = useFirebaseData();
@@ -21,7 +23,8 @@ export default function App() {
   // Initialize and sync history state
   useEffect(() => {
     if (!window.history.state) {
-      window.history.replaceState({ appState: 'intro', selectedCategory: '', selectedProject: null }, '');
+      const initialState = window.innerWidth < 768 ? 'carousel' : 'intro';
+      window.history.replaceState({ appState: initialState, selectedCategory: '', selectedProject: null }, '');
     }
     
     const handlePopState = (e: PopStateEvent) => {

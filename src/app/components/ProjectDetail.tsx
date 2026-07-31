@@ -18,6 +18,12 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
   const [scrollLeft, setScrollLeft] = useState(0);
   const [popupIndex, setPopupIndex] = useState<number | null>(null);
 
+  const validImages = project.detailImages?.filter(url => url) || [];
+  const displayImages = validImages.length > 0 ? validImages : [
+    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1600",
+    "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=1600"
+  ];
+
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!scrollContainerRef.current) return;
     setIsDragging(true);
@@ -186,20 +192,21 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
           
           {/* 1. Individual Large Images (First 2) */}
           <div className="w-full max-w-7xl mx-auto flex flex-col gap-16 md:gap-32 px-6 md:px-12">
-            {project.detailImages?.slice(0, 2).filter(url => url).map((url, index) => (
-              <ParallaxImage key={`individual-${index}`} src={url} alt={`Detail ${index + 1}`} speed={0.05} />
+            {displayImages.slice(0, 2).map((url, index) => (
+              <ParallaxImage 
+                key={`individual-${index}`} 
+                src={url} 
+                alt={`Detail ${index + 1}`} 
+                speed={0.05} 
+                onClick={() => {
+                  if (window.innerWidth < 768) setPopupIndex(index);
+                }}
+              />
             ))}
-            {/* Fallback individual images if none exist */}
-            {(!project.detailImages || !project.detailImages.some(url => url)) && (
-              <>
-                <ParallaxImage src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1600" alt="Detail 1" speed={0.1} />
-                <ParallaxImage src="https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=1600" alt="Detail 2" speed={0.05} />
-              </>
-            )}
           </div>
 
           {/* 2. Horizontal Scroll Gallery (Remaining Images) */}
-          {project.detailImages && project.detailImages.slice(2).some(url => url) && (
+          {displayImages.length > 2 && (
             <div 
               ref={scrollContainerRef}
               onMouseDown={handleMouseDown}
@@ -210,12 +217,12 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                 isDragging ? 'cursor-grabbing snap-none' : 'cursor-grab snap-x snap-mandatory scroll-smooth'
               }`}
             >
-              {project.detailImages.slice(2).filter(url => url).map((url, index) => (
+              {displayImages.slice(2).map((url, index) => (
                 <div 
                   key={`gallery-${index}`} 
                   className="w-[85vw] md:w-[75vw] shrink-0 snap-center border border-[#f4f4f0]/10"
                   onClick={() => {
-                    if (window.innerWidth < 768) setPopupIndex(index);
+                    if (window.innerWidth < 768) setPopupIndex(index + 2);
                   }}
                 >
                   <ParallaxImage src={url} alt={`Gallery Detail ${index + 3}`} speed={0.02} />
@@ -283,7 +290,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
               }}
               onClick={() => setPopupIndex(null)}
             >
-              {project.detailImages?.slice(2).filter(url => url).map((url, idx) => (
+              {displayImages.map((url, idx) => (
                 <div 
                   key={`popup-${idx}`} 
                   className="w-screen h-full shrink-0 snap-center flex items-center justify-center p-4"
@@ -305,7 +312,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
 }
 
 // Reusable Parallax Image Component
-function ParallaxImage({ src, alt, speed = 0.1 }: { src: string, alt: string, speed?: number }) {
+function ParallaxImage({ src, alt, speed = 0.1, onClick }: { src: string, alt: string, speed?: number, onClick?: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -315,7 +322,7 @@ function ParallaxImage({ src, alt, speed = 0.1 }: { src: string, alt: string, sp
   const y = useTransform(scrollYProgress, [0, 1], ["-10%", "10%"]);
 
   return (
-    <div ref={ref} className="relative w-full h-[60vh] md:h-[80vh] overflow-hidden bg-[#111]">
+    <div ref={ref} className="relative w-full h-[60vh] md:h-[80vh] overflow-hidden bg-[#111]" onClick={onClick}>
       <motion.img 
         style={{ y }}
         src={src} 

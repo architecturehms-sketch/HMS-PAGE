@@ -30,7 +30,7 @@ export function CategoryArchive({ category, projects, onClose, onSelectProject }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
       
-      <div className="fixed top-0 left-0 w-full p-6 flex justify-between items-center z-50 pointer-events-none mix-blend-difference text-[#f4f4f0]">
+      <div className="fixed top-0 left-0 w-full p-6 flex justify-between items-center z-50 pointer-events-none text-[#1a1a1a]">
         <div className="font-mono text-xs uppercase tracking-[0.2em]">
           HMS ARCHITECTURE
         </div>

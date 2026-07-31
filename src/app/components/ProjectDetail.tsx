@@ -108,7 +108,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
           <img 
             src={project.img} 
             alt={project.title} 
-            className="w-full h-full object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 ease-out"
+            className="w-full h-full object-cover grayscale-0 md:grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700 ease-out"
           />
           <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-700 pointer-events-none" />
         </motion.div>

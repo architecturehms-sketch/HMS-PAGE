@@ -169,7 +169,7 @@ export function MainContent({ isVisible, onOpenAdmin, onGoToCarousel, onSelectCa
                 </section>
 
                 {/* Mobile Map (Landing Page Only) */}
-                <div className="md:hidden w-full bg-[#1a1a1a] px-4 sm:px-6 pb-8 pt-2">
+                <div className="md:hidden w-full bg-[#1a1a1a] px-4 sm:px-6 pb-8 pt-8">
                   <MinimalMap locations={locations} />
                 </div>
               </>

@@ -67,7 +67,7 @@ const defaultLocations: MapLocation[] = [
 ];
 
 export function useFirebaseData() {
-  const [projects, setProjects] = useState<Project[]>(carouselData); // 기본값은 mock data (안전망)
+  const [projects, setProjects] = useState<Project[]>([]); // 빈 배열로 초기화하여 로딩 중 더미 이미지가 뜨지 않도록 수정
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [pageData, setPageData] = useState<PageData>(defaultPageData);
   const [locations, setLocations] = useState<MapLocation[]>(defaultLocations);

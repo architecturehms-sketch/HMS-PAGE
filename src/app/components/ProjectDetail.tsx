@@ -181,7 +181,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
         </div>
 
         {/* Media Layout */}
-        <div className="w-[100vw] -ml-6 md:-ml-12 flex flex-col gap-16 md:gap-32 mb-32 relative left-0 right-0">
+        <div className="w-[100vw] flex flex-col gap-16 md:gap-32 mb-32 relative left-0 right-0">
           
           {/* 1. Individual Large Images (First 2) */}
           <div className="w-full max-w-7xl mx-auto flex flex-col gap-16 md:gap-32 px-6 md:px-12">

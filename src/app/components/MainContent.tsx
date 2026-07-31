@@ -117,11 +117,11 @@ export function MainContent({ isVisible, onOpenAdmin, onGoToCarousel, onSelectCa
                 >
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[35vw] font-black text-[#1a1a1a]/[0.04] select-none pointer-events-none z-0">HMS</div>
                   
-                  <div className="relative z-10 text-[#1a1a1a] select-none cursor-default inline-block w-full py-4 px-8 -ml-8">
-                    <h2 className="text-[9vw] sm:text-[10vw] md:text-[8vw] font-black uppercase leading-[1.1] tracking-[-0.02em] whitespace-nowrap pl-[4vw] -ml-[4vw]">
+                  <div className="relative z-10 text-[#1a1a1a] select-none cursor-default inline-block w-full py-4 md:px-8 md:-ml-8">
+                    <h2 className="text-[11.2vw] sm:text-[11.5vw] md:text-[8vw] font-black uppercase leading-[1.05] md:leading-[1.1] tracking-[-0.04em] md:tracking-[-0.02em] whitespace-nowrap md:pl-[4vw] md:-ml-[4vw]">
                       ARCHITECTURE
                     </h2>
-                    <h2 className="text-[9vw] sm:text-[10vw] md:text-[8vw] font-black uppercase leading-[1.1] tracking-[-0.02em] -mt-[3vw] md:-mt-[1.5vw] whitespace-nowrap pl-[4vw] -ml-[4vw]">
+                    <h2 className="text-[11.2vw] sm:text-[11.5vw] md:text-[8vw] font-black uppercase leading-[1.05] md:leading-[1.1] tracking-[-0.04em] md:tracking-[-0.02em] -mt-[2.5vw] md:-mt-[1.5vw] whitespace-nowrap md:pl-[4vw] md:-ml-[4vw]">
                       & DESIGN
                     </h2>
                   </div>

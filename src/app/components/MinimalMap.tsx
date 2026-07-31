@@ -37,7 +37,7 @@ export const MinimalMap = React.memo(function MinimalMap({ locations = [] }: Min
   };
 
   return (
-    <div className="w-full pt-5 mt-auto border-t border-[#f4f4f0]/20 flex flex-col gap-3 opacity-80 hover:opacity-100 transition-opacity group">
+    <div className="w-full pt-0 md:pt-5 mt-auto border-t-0 md:border-t border-[#f4f4f0]/20 flex flex-col gap-3 opacity-80 hover:opacity-100 transition-opacity group">
       <div className="flex justify-between items-center text-[9px] font-mono uppercase tracking-widest text-[#f4f4f0]/60">
         <span>Global Sites</span>
         <span className="flex items-center gap-1.5 group-hover:text-[#f4f4f0] transition-colors">

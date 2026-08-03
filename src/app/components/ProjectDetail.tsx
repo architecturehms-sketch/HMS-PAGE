@@ -122,7 +122,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
         
         <motion.div 
           style={{ opacity: opacityHero }}
-          className="absolute inset-0 flex flex-col justify-end p-6 md:p-12 pb-24"
+          className="absolute inset-0 flex flex-col justify-end p-6 md:p-12 pb-6 md:pb-24"
         >
           <motion.h1 
             initial={{ y: 50, opacity: 0 }}

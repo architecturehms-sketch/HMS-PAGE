@@ -178,14 +178,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
       {/* Main Content Section */}
       <div className="relative z-10 bg-[#1a1a1a] w-full min-h-screen px-6 md:px-12 py-24 flex flex-col items-center">
         
-        <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-12 gap-12 mb-32">
-          <div className="md:col-span-4 font-mono text-sm tracking-widest uppercase border-t border-[#f4f4f0]/20 pt-4 text-[#f4f4f0]/70">
-            Project Overview
-          </div>
-          <div className="md:col-span-8 text-xl md:text-3xl font-medium leading-[1.4] tracking-tight text-[#f4f4f0] whitespace-pre-wrap">
-            {project.content || `The ${project.title} represents a fundamental shift in our approach to brutalist architecture, merging raw concrete textures with expansive glass volumes to create a dialogue between mass and transparency. Designed in ${project.year}, this ${project.desc.toLowerCase()} space challenges conventional boundaries.`}
-          </div>
-        </div>
+
 
         {/* Media Layout */}
         <div className="w-[100vw] flex flex-col gap-16 md:gap-32 mb-32 relative left-0 right-0">

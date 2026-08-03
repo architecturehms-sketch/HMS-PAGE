@@ -128,7 +128,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="-ml-2 md:-ml-4 text-[7vw] md:text-[5vw] font-medium leading-[0.85] tracking-tighter text-[#f4f4f0] mix-blend-difference"
+            className="md:-ml-4 text-[7vw] md:text-[5vw] font-medium leading-[0.85] tracking-tighter text-[#f4f4f0] mix-blend-difference"
           >
             {project.title}
           </motion.h1>

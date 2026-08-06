@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Project } from '../../hooks/useFirebaseData';
 
@@ -9,11 +9,13 @@ interface CarouselUIProps {
 }
 
 export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
   
-  // Scroll states (using index space, e.g., 0 = first item, 1 = second item)
-  const targetScrollIndex = useRef(0);
-  const currentScrollIndex = useRef(0);
+  // Rotation states
+  const targetRotation = useRef(0);
+  const currentRotation = useRef(0);
+  const hoverVelocity = useRef(0);
   
   // Drag states
   const isDragging = useRef(false);
@@ -22,24 +24,37 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
 
   // Responsive variables
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  const cardWidth = isMobile ? 140 : 220;
-  const cardHeight = isMobile ? 210 : 330;
-  const items = projects;
+  const cardWidth = isMobile ? 80 : 130;
+  const cardHeight = isMobile ? 260 : 420;
+  const gap = isMobile ? 4 : 8; // Small gap between cards like the image
+
+  // Repeat projects to create a dense cylinder (at least 24 items)
+  const displayItems = React.useMemo(() => {
+    if (!projects || projects.length === 0) return [];
+    let items = [...projects];
+    while (items.length < 24) {
+      items = [...items, ...projects];
+    }
+    // Cap at a multiple of projects length to avoid weird wrapping, around 24-30
+    const targetLength = Math.max(24, Math.ceil(24 / projects.length) * projects.length);
+    return items.slice(0, targetLength);
+  }, [projects]);
+
+  const totalItems = displayItems.length;
+  // Calculate radius based on width and gap to form a perfect circle
+  const radius = Math.round((cardWidth + gap) / (2 * Math.tan(Math.PI / totalItems)));
 
   useEffect(() => {
     if (!isActive) return;
 
-    // Reset to beginning on open
-    currentScrollIndex.current = -2; // Start from outside
-    targetScrollIndex.current = 0;
+    // Start with a slight rotation to give a dynamic entrance
+    currentRotation.current = -180;
+    targetRotation.current = 0;
 
     let animationFrameId: number;
 
     const handleWheel = (e: WheelEvent) => {
-      // Prevent default to stop full page scrolling if desired (usually handled globally)
-      const delta = e.deltaY || e.deltaX;
-      targetScrollIndex.current += delta * 0.003;
-      clampTarget();
+      targetRotation.current -= e.deltaY * 0.1;
     };
 
     const handlePointerDown = (e: PointerEvent) => {
@@ -49,99 +64,95 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
 
     const handlePointerMove = (e: PointerEvent) => {
       if (isDragging.current) {
+        hoverVelocity.current = 0;
         const delta = e.clientX - startX.current;
-        const sensitivity = isMobile ? 0.008 : 0.004;
-        targetScrollIndex.current -= delta * sensitivity;
-        clampTarget();
+        const sensitivity = isMobile ? 0.4 : 0.2;
+        targetRotation.current += delta * sensitivity;
         startX.current = e.clientX;
+        return;
       }
-    };
 
-    const clampTarget = () => {
-      if (targetScrollIndex.current < 0) {
-        targetScrollIndex.current = 0;
-      } else if (targetScrollIndex.current > items.length - 1) {
-        targetScrollIndex.current = items.length - 1;
+      if (isMobile) return;
+
+      const x = e.clientX;
+      const width = window.innerWidth;
+      const margin = width * 0.25;
+
+      if (x < margin) {
+        const factor = (margin - x) / margin;
+        hoverVelocity.current = factor * 1.0;
+      } else if (x > width - margin) {
+        const factor = (x - (width - margin)) / margin;
+        hoverVelocity.current = -factor * 1.0;
+      } else {
+        hoverVelocity.current = 0;
       }
     };
 
     const handlePointerUp = () => {
       isDragging.current = false;
-      // Snap to nearest integer on release
-      targetScrollIndex.current = Math.round(targetScrollIndex.current);
-      clampTarget();
+    };
+
+    const handlePointerLeave = () => {
+      hoverVelocity.current = 0;
     };
 
     window.addEventListener('wheel', handleWheel, { passive: true });
     window.addEventListener('pointerdown', handlePointerDown);
     window.addEventListener('pointermove', handlePointerMove);
     window.addEventListener('pointerup', handlePointerUp);
-    
-    // Add touch end to handle snap on mobile correctly
+    document.addEventListener('pointerleave', handlePointerLeave);
     window.addEventListener('touchend', handlePointerUp);
 
     const animate = () => {
-      // Lerp for smooth scrolling wave effect
-      currentScrollIndex.current += (targetScrollIndex.current - currentScrollIndex.current) * 0.06;
+      if (!isDragging.current && hoverVelocity.current === 0) {
+        // Snap to nearest item
+        const itemAngle = 360 / totalItems;
+        const nearestSnap = Math.round(targetRotation.current / itemAngle) * itemAngle;
+        targetRotation.current += (nearestSnap - targetRotation.current) * 0.05;
+      }
 
-      const spineSpacing = isMobile ? 30 : 45;
-      const centerSpacing = isMobile ? 110 : 160;
-      const maxRotation = 82; // 82 degrees creates a good "spine" look
+      targetRotation.current += hoverVelocity.current;
+      currentRotation.current += (targetRotation.current - currentRotation.current) * 0.08;
+
+      if (wrapperRef.current) {
+        wrapperRef.current.style.transform = `rotateY(${currentRotation.current}deg)`;
+      }
 
       cardsRef.current.forEach((card, i) => {
         if (!card) return;
+        const itemAngle = i * (360 / totalItems);
         
-        // Difference in index between this card and the current scroll focus
-        const diff = i - currentScrollIndex.current;
-        const absDiff = Math.abs(diff);
+        // Calculate absolute angle to determine z-depth and visibility
+        const rad = (itemAngle + currentRotation.current) * (Math.PI / 180);
+        const z = Math.cos(rad); // 1 = front center, -1 = back center
         
-        // 1. Calculate X Position
-        let pushAmount = 0;
-        if (diff > 0) {
-          pushAmount = Math.min(diff, 1) * centerSpacing;
-        } else if (diff < 0) {
-          pushAmount = Math.max(diff, -1) * centerSpacing;
-        }
-        const translateX = diff * spineSpacing + pushAmount;
-
-        // 2. Calculate Rotation Y
-        let rotateY = 0;
-        if (diff > 0) {
-          rotateY = Math.min(diff, 1) * -maxRotation;
-        } else if (diff < 0) {
-          rotateY = Math.max(diff, -1) * -maxRotation; 
-        }
-
-        // 3. Calculate Z translation and Scale for "Pop out" effect
-        let translateZ = 0;
-        let scale = 1.0;
         let opacity = 1.0;
         let pointerEvents = 'auto';
 
-        if (absDiff < 1) {
-          // Transitioning through center
-          translateZ = (1 - absDiff) * (isMobile ? 100 : 150);
-          scale = 1 + (1 - absDiff) * 0.1;
-          opacity = 1;
-        } else {
-          // Outside center (Spines)
-          translateZ = 0;
-          scale = 1;
-          opacity = Math.max(0.3, 1 - (absDiff - 1) * 0.2); // Fade out items far away
+        // Dimming effect: darkest at the back, brightest at the front
+        // z ranges from 1 to -1
+        const brightness = Math.max(0.2, (z + 1) / 2); // 0.2 to 1.0
+        
+        if (z < 0) {
+          pointerEvents = 'none'; // Cannot click back items
+          opacity = Math.max(0, 1 + z * 1.5); // Fade out back items if needed
         }
-
-        // Only allow clicking on the center item
-        if (absDiff > 0.5) {
-          pointerEvents = 'none';
-        }
-
-        // Calculate z-index: Center item is highest
-        const zIndex = 100 - Math.round(absDiff * 10);
 
         card.style.opacity = opacity.toFixed(3);
-        card.style.zIndex = zIndex.toString();
         card.style.pointerEvents = pointerEvents;
-        card.style.transform = `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale.toFixed(3)})`;
+        
+        // Apply transform
+        card.style.transform = `rotateY(${itemAngle}deg) translateZ(${radius}px)`;
+        
+        // Apply brightness to the inner image container
+        const inner = card.querySelector('.card-inner') as HTMLElement;
+        if (inner) {
+          // Extra brightness boost for the absolute center item
+          const isCenter = z > 0.98;
+          inner.style.filter = `brightness(${isCenter ? 1.1 : brightness})`;
+          inner.style.transform = isCenter ? 'scale(1.05)' : 'scale(1)';
+        }
       });
 
       animationFrameId = requestAnimationFrame(animate);
@@ -155,9 +166,10 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
       window.removeEventListener('touchend', handlePointerUp);
+      document.removeEventListener('pointerleave', handlePointerLeave);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [isActive, items.length, isMobile]);
+  }, [isActive, totalItems, radius, isMobile]);
 
   useEffect(() => {
     if (!isActive) {
@@ -169,12 +181,12 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
 
   return (
     <div
-      className={`fixed inset-0 w-screen h-[100dvh] z-40 transition-opacity duration-1000 overflow-hidden select-none touch-none ${
+      className={`fixed inset-0 w-screen h-[100dvh] z-40 transition-opacity duration-1000 overflow-hidden select-none touch-none bg-[#111] ${
         isActive ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
       }`}
-      style={{ perspective: '1200px' }} // Perspective depth for the 3D effect
+      style={{ perspective: '1800px' }} // Strong perspective for depth
     >
-      {/* Background Marquee Layer (Unchanged) */}
+      {/* Background Marquee Layer (Kept as requested) */}
       <div className="hidden md:flex absolute inset-0 pointer-events-none z-[-1] overflow-hidden opacity-[0.08] justify-center items-center gap-6 scale-[1.1]">
         <style>{`
           @keyframes marqueeUp {
@@ -187,7 +199,7 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
           }
         `}</style>
         {[...Array(7)].map((_, colIndex) => {
-          const offsetItems = [...items.slice(colIndex % items.length), ...items.slice(0, colIndex % items.length)];
+          const offsetItems = [...projects.slice(colIndex % projects.length), ...projects.slice(0, colIndex % projects.length)];
           const columnItems = [...offsetItems, ...offsetItems];
 
           return (
@@ -218,85 +230,74 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
 
       <div 
         className="absolute top-1/2 left-1/2 w-0 h-0 flex items-center justify-center" 
-        style={{ transformStyle: 'preserve-3d' }}
+        style={{ 
+          transformStyle: 'preserve-3d',
+          // RotateX(-8deg) gives the arched look (center higher, edges lower)
+          // translateY pushes the whole carousel to visually center it after rotation
+          transform: 'rotateX(-8deg) translateY(-20px)' 
+        }}
       >
-        {items.map((item, i) => (
-          <div
-            key={`${item.id}-${i}`}
-            ref={(el) => (cardsRef.current[i] = el)}
-            onClick={() => onSelect(item)}
-            onMouseEnter={() => (isHovering.current = true)}
-            onMouseLeave={() => (isHovering.current = false)}
-            className="absolute flex items-center justify-center cursor-pointer transition-colors duration-500 will-change-transform"
-            style={{
-              width: `${cardWidth}px`,
-              height: `${cardHeight}px`,
-              marginLeft: `-${cardWidth / 2}px`,
-              marginTop: `-${cardHeight / 2}px`,
-              transformOrigin: 'center center',
-            }}
-          >
-            <div 
-              className={`w-full h-full relative transition-transform duration-500 ease-out group-hover:scale-[1.02] ${
-                'isLogo' in item && item.isLogo 
-                  ? 'flex items-center justify-center' 
-                  : 'overflow-hidden rounded-md bg-[#1a1a1a] shadow-[0_20px_40px_rgba(0,0,0,0.6)] border border-white/10'
-              }`}
+        <div ref={wrapperRef} className="absolute inset-0" style={{ transformStyle: 'preserve-3d' }}>
+          {displayItems.map((item, i) => (
+            <div
+              key={`${item.id}-${i}`}
+              ref={(el) => (cardsRef.current[i] = el)}
+              onClick={() => onSelect(item)}
+              onMouseEnter={() => (isHovering.current = true)}
+              onMouseLeave={() => (isHovering.current = false)}
+              className="absolute flex items-center justify-center cursor-pointer will-change-transform group"
+              style={{
+                width: `${cardWidth}px`,
+                height: `${cardHeight}px`,
+                marginLeft: `-${cardWidth / 2}px`,
+                marginTop: `-${cardHeight / 2}px`,
+                transformOrigin: 'center center',
+              }}
             >
-              {'isLogo' in item && item.isLogo ? (
-                <>
-                  <img 
-                    src="/about_logo.webp" 
-                    alt="ABOUT US" 
-                    className="w-full h-full scale-[1.2] object-contain filter brightness-0 invert opacity-90 transition-all duration-700 ease-out select-none drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                    }}
-                  />
-                  <span className="hidden text-[100px] font-black tracking-tighter text-[#f4f4f0] opacity-90 transition-all duration-700 ease-out select-none drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]">
-                    HMS
-                  </span>
-                </>
-              ) : (
-                <>
+              <div 
+                className="card-inner w-full h-full relative transition-all duration-300 ease-out bg-[#0a0a0a] overflow-hidden rounded-[2px]"
+                style={{ 
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.8)' 
+                }}
+              >
+                {'isLogo' in item && item.isLogo ? (
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-[#111]">
+                    <img 
+                      src="/about_logo.webp" 
+                      alt="ABOUT US" 
+                      className="w-3/4 object-contain filter brightness-0 invert opacity-80"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                      }}
+                    />
+                    <span className="hidden text-3xl font-black tracking-tighter text-[#f4f4f0] opacity-80">
+                      HMS
+                    </span>
+                  </div>
+                ) : (
                   <ImageWithFallback
                     src={item.img}
                     alt={item.title}
-                    className="w-full h-full object-cover transition-all duration-700 ease-out brightness-[0.7] group-hover:brightness-110 pointer-events-none"
+                    className="w-full h-full object-cover pointer-events-none"
                   />
-                  {/* Subtle overlay for inactive cards to make them look more like spines when rotated */}
-                  <div className="absolute inset-0 bg-black/20 transition-colors duration-500 pointer-events-none" />
-                </>
-              )}
-              
-              {/* Title & Detail Overlay - only prominent when facing front */}
-              <div className="absolute bottom-4 left-4 right-4 md:bottom-6 md:left-6 md:right-6 z-20 pointer-events-none">
-                <h3 className="text-[#f4f4f0] text-xs md:text-lg font-bold tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] break-words leading-tight">
-                  {item.desc}
-                </h3>
-                <p className="text-[#f4f4f0]/80 text-[10px] font-mono uppercase tracking-widest mt-2 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
-                  {'isLogo' in item && item.isLogo ? 'ABOUT US' : 'ENTER PROJECT'}
-                </p>
+                )}
+                
+                {/* Title overlay - visible only on hover or when centered */}
+                <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                  <h3 className="text-[#f4f4f0] text-xs font-bold tracking-tight drop-shadow-md break-words">
+                    {item.desc}
+                  </h3>
+                </div>
               </div>
-              
-              {/* Darkening shadow that appears on the spine edges */}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-black/80 opacity-0 transition-opacity duration-300 pointer-events-none spine-shadow" />
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-[#1a1a1a]/80 backdrop-blur-md px-6 py-3 rounded-full font-mono text-[10px] text-[#f4f4f0] tracking-[0.2em] uppercase z-50 pointer-events-none shadow-lg border border-white/10 whitespace-nowrap">
-        {isMobile ? 'Swipe to Explore' : 'Scroll or Drag to Explore'}
+        {isMobile ? 'Swipe to Rotate' : 'Scroll or Drag to Rotate'}
       </div>
-      
-      {/* Add a global style to fade in the edge shadows when rotated */}
-      <style>{`
-        .spine-shadow {
-          opacity: 0 !important;
-        }
-      `}</style>
     </div>
   );
 }

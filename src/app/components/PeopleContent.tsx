@@ -47,20 +47,22 @@ export function PeopleContent({ team }: PeopleContentProps) {
     const rect = donutRef.current.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
-    const radius = rect.width / 2;
+    const radiusX = rect.width / 2;
+    const radiusY = rect.height / 2;
 
     const dx = mousePos.x - cx;
     const dy = mousePos.y - cy;
     
-    // Calculate distance from center (prevent division by zero)
-    const distance = Math.sqrt(dx * dx + dy * dy) || 1;
+    // Use angle to calculate elliptical orbit
+    const angle = Math.atan2(dy, dx);
     
-    // Orbit radius = Donut radius + half of card width (~110px) + padding (30px)
-    const orbitRadius = radius + 140;
+    // Orbit radii (donut radius + padding)
+    const orbitRadiusX = radiusX + 140;
+    const orbitRadiusY = radiusY + 140;
 
-    // Force the anchor point to perfectly orbit the donut edge
-    targetX = cx + (dx / distance) * orbitRadius;
-    targetY = cy + (dy / distance) * orbitRadius;
+    // Force the anchor point to perfectly orbit the elliptical edge
+    targetX = cx + Math.cos(angle) * orbitRadiusX;
+    targetY = cy + Math.sin(angle) * orbitRadiusY;
   }
 
   return (
@@ -75,10 +77,11 @@ export function PeopleContent({ team }: PeopleContentProps) {
       </section>
 
       {/* Team 12-Segment Donut Layout */}
-      <section className="p-4 sm:p-6 py-6 md:py-8 flex items-center justify-center">
+      <section className="p-4 sm:p-6 py-6 md:py-8 flex items-center justify-center" style={{ perspective: '1200px' }}>
         <div 
           ref={donutRef}
-          className="relative w-full max-w-[350px] md:max-w-[500px] lg:max-w-[600px] xl:max-w-[650px] aspect-square"
+          className="relative w-full max-w-[350px] md:max-w-[500px] lg:max-w-[600px] xl:max-w-[650px] aspect-square transition-transform duration-700"
+          style={{ transformStyle: 'preserve-3d', transform: 'rotateX(55deg) scale(0.9)', transformOrigin: 'center center' }}
         >
           
           {/* Clock Tick Marks */}

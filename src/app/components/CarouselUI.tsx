@@ -24,7 +24,7 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
 
   // Responsive variables
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  const cardWidth = isMobile ? 80 : 130;
+  const cardWidth = isMobile ? 60 : 100;
   const cardHeight = isMobile ? 180 : 280;
   const gap = isMobile ? 4 : 8; // Small gap between cards like the image
 

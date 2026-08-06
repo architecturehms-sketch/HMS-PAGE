@@ -151,7 +151,7 @@ export function PeopleContent({ team }: PeopleContentProps) {
           className="absolute top-1/2 left-1/2 w-0 h-0 flex items-center justify-center" 
           style={{ 
             transformStyle: 'preserve-3d',
-            transform: 'rotateX(-8deg) translateY(-20px)' 
+            transform: 'rotateX(-8deg) translateY(-60px)' 
           }}
         >
           <div ref={wrapperRef} className="absolute inset-0" style={{ transformStyle: 'preserve-3d' }}>

@@ -25,7 +25,7 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
   // Responsive variables
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const cardWidth = isMobile ? 80 : 130;
-  const cardHeight = isMobile ? 260 : 420;
+  const cardHeight = isMobile ? 180 : 280;
   const gap = isMobile ? 4 : 8; // Small gap between cards like the image
 
   // Repeat projects to create a dense cylinder (at least 24 items)
@@ -64,28 +64,10 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
 
     const handlePointerMove = (e: PointerEvent) => {
       if (isDragging.current) {
-        hoverVelocity.current = 0;
         const delta = e.clientX - startX.current;
         const sensitivity = isMobile ? 0.4 : 0.2;
         targetRotation.current += delta * sensitivity;
         startX.current = e.clientX;
-        return;
-      }
-
-      if (isMobile) return;
-
-      const x = e.clientX;
-      const width = window.innerWidth;
-      const margin = width * 0.25;
-
-      if (x < margin) {
-        const factor = (margin - x) / margin;
-        hoverVelocity.current = factor * 1.0;
-      } else if (x > width - margin) {
-        const factor = (x - (width - margin)) / margin;
-        hoverVelocity.current = -factor * 1.0;
-      } else {
-        hoverVelocity.current = 0;
       }
     };
 
@@ -93,26 +75,20 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
       isDragging.current = false;
     };
 
-    const handlePointerLeave = () => {
-      hoverVelocity.current = 0;
-    };
-
     window.addEventListener('wheel', handleWheel, { passive: true });
     window.addEventListener('pointerdown', handlePointerDown);
     window.addEventListener('pointermove', handlePointerMove);
     window.addEventListener('pointerup', handlePointerUp);
-    document.addEventListener('pointerleave', handlePointerLeave);
     window.addEventListener('touchend', handlePointerUp);
 
     const animate = () => {
-      if (!isDragging.current && hoverVelocity.current === 0) {
+      if (!isDragging.current) {
         // Snap to nearest item
         const itemAngle = 360 / totalItems;
         const nearestSnap = Math.round(targetRotation.current / itemAngle) * itemAngle;
         targetRotation.current += (nearestSnap - targetRotation.current) * 0.05;
       }
 
-      targetRotation.current += hoverVelocity.current;
       currentRotation.current += (targetRotation.current - currentRotation.current) * 0.08;
 
       if (wrapperRef.current) {
@@ -166,7 +142,6 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
       window.removeEventListener('touchend', handlePointerUp);
-      document.removeEventListener('pointerleave', handlePointerLeave);
       cancelAnimationFrame(animationFrameId);
     };
   }, [isActive, totalItems, radius, isMobile]);

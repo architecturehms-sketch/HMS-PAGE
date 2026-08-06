@@ -178,8 +178,8 @@ export function CanvasBackground({ appState, onTransitionComplete }: CanvasBackg
       camAngleY += (targetCamY - camAngleY) * 0.1; // Smoother transition for continuous rotation
       camAngleX += (targetCamX - camAngleX) * 0.1; // Smoother transition for continuous rotation
 
-      centerPoint.x = lerp(centerPoint.x, mouse.x, 0.12); // Increased response speed (was 0.05)
-      centerPoint.y = lerp(centerPoint.y, mouse.y, 0.12); // Increased response speed (was 0.05)
+      centerPoint.x = mouse.x;
+      centerPoint.y = mouse.y;
       
       if (!isMobile) {
         let lineR = lerp(255, 0, transitionProgress);

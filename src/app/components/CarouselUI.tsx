@@ -12,10 +12,9 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
   
-  // Rotation states
-  const targetRotation = useRef(0);
-  const currentRotation = useRef(0);
-  const hoverVelocity = useRef(0);
+  // Scroll states (in pixels)
+  const targetScroll = useRef(0);
+  const currentScroll = useRef(0);
   
   // Drag states
   const isDragging = useRef(false);
@@ -26,35 +25,34 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const cardWidth = isMobile ? 60 : 100;
   const cardHeight = isMobile ? 180 : 280;
-  const gap = isMobile ? 4 : 8; // Small gap between cards like the image
+  const gap = isMobile ? 4 : 8;
+  const itemWidth = cardWidth + gap;
 
-  // Repeat projects to create a dense cylinder (at least 24 items)
+  // Repeat projects to ensure enough items for a seamless loop
   const displayItems = React.useMemo(() => {
     if (!projects || projects.length === 0) return [];
     let items = [...projects];
     while (items.length < 24) {
       items = [...items, ...projects];
     }
-    // Cap at a multiple of projects length to avoid weird wrapping, around 24-30
     const targetLength = Math.max(24, Math.ceil(24 / projects.length) * projects.length);
     return items.slice(0, targetLength);
   }, [projects]);
 
   const totalItems = displayItems.length;
-  // Calculate radius based on width and gap to form a perfect circle
-  const radius = Math.round((cardWidth + gap) / (2 * Math.tan(Math.PI / totalItems)));
+  const totalWidth = totalItems * itemWidth;
 
   useEffect(() => {
     if (!isActive) return;
 
-    // Start with a slight rotation to give a dynamic entrance
-    currentRotation.current = -180;
-    targetRotation.current = 0;
+    // Start with a slight scroll to give a dynamic entrance
+    currentScroll.current = -500;
+    targetScroll.current = 0;
 
     let animationFrameId: number;
 
     const handleWheel = (e: WheelEvent) => {
-      targetRotation.current -= e.deltaY * 0.1;
+      targetScroll.current += e.deltaY;
     };
 
     const handlePointerDown = (e: PointerEvent) => {
@@ -65,8 +63,8 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
     const handlePointerMove = (e: PointerEvent) => {
       if (isDragging.current) {
         const delta = e.clientX - startX.current;
-        const sensitivity = isMobile ? 0.4 : 0.2;
-        targetRotation.current += delta * sensitivity;
+        const sensitivity = isMobile ? 1.5 : 1.2;
+        targetScroll.current -= delta * sensitivity;
         startX.current = e.clientX;
       }
     };
@@ -83,49 +81,51 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
 
     const animate = () => {
       if (!isDragging.current) {
-        // Snap to nearest item
-        const itemAngle = 360 / totalItems;
-        const nearestSnap = Math.round(targetRotation.current / itemAngle) * itemAngle;
-        targetRotation.current += (nearestSnap - targetRotation.current) * 0.05;
+        // Optional: Snap to nearest item when not dragging
+        const nearestSnap = Math.round(targetScroll.current / itemWidth) * itemWidth;
+        targetScroll.current += (nearestSnap - targetScroll.current) * 0.05;
       }
 
-      currentRotation.current += (targetRotation.current - currentRotation.current) * 0.08;
-
-      if (wrapperRef.current) {
-        wrapperRef.current.style.transform = `rotateY(${currentRotation.current}deg)`;
-      }
+      currentScroll.current += (targetScroll.current - currentScroll.current) * 0.08;
 
       cardsRef.current.forEach((card, i) => {
         if (!card) return;
-        const itemAngle = i * (360 / totalItems);
         
-        // Calculate absolute angle to determine z-depth and visibility
-        const rad = (itemAngle + currentRotation.current) * (Math.PI / 180);
-        const z = Math.cos(rad); // 1 = front center, -1 = back center
+        // Calculate base position relative to current scroll
+        const rawX = (i * itemWidth) - currentScroll.current;
         
-        let opacity = 1.0;
+        // Wrap items around the center (X = 0)
+        // This math ensures that items going too far left will loop to the right, and vice versa.
+        const x = ((rawX + totalWidth / 2) % totalWidth + totalWidth) % totalWidth - totalWidth / 2;
+        
+        // Calculate distance from center to apply visual effects
+        const dist = Math.abs(x);
+        
+        // Fade out/shrink items that are far from the center
+        // Max brightness at dist = 0, minimum at dist = 600px
+        const z = Math.max(0, 1 - (dist / (isMobile ? 300 : 600))); 
+        const brightness = Math.max(0.2, z);
+        const isCenter = dist < (itemWidth / 2);
+        
         let pointerEvents = 'auto';
+        let opacity = 1.0;
 
-        // Dimming effect: darkest at the back, brightest at the front
-        // z ranges from 1 to -1
-        const brightness = Math.max(0.2, (z + 1) / 2); // 0.2 to 1.0
-        
-        if (z < 0) {
-          pointerEvents = 'none'; // Cannot click back items
-          opacity = Math.max(0, 1 + z * 1.5); // Fade out back items if needed
+        // Hide items that are too far away to avoid clipping at the edge of the wrapper
+        if (z === 0) {
+          pointerEvents = 'none';
+          opacity = 0;
         }
 
         card.style.opacity = opacity.toFixed(3);
         card.style.pointerEvents = pointerEvents;
+        card.style.zIndex = isCenter ? '10' : '1';
         
-        // Apply transform
-        card.style.transform = `rotateY(${itemAngle}deg) translateZ(${radius}px)`;
+        // Apply flat horizontal transform (No 3D rotation or Z translation)
+        card.style.transform = `translateX(${x}px)`;
         
-        // Apply brightness to the inner image container
+        // Apply brightness and scale to the inner image container
         const inner = card.querySelector('.card-inner') as HTMLElement;
         if (inner) {
-          // Extra brightness boost for the absolute center item
-          const isCenter = z > 0.98;
           inner.style.filter = `brightness(${isCenter ? 1.1 : brightness})`;
           inner.style.transform = isCenter ? 'scale(1.05)' : 'scale(1)';
         }
@@ -144,7 +144,7 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
       window.removeEventListener('touchend', handlePointerUp);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [isActive, totalItems, radius, isMobile]);
+  }, [isActive, totalItems, itemWidth, totalWidth, isMobile]);
 
   useEffect(() => {
     if (!isActive) {
@@ -159,18 +159,17 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
       className={`fixed inset-0 w-screen h-[100dvh] z-40 transition-opacity duration-1000 overflow-hidden select-none touch-none bg-[#111] ${
         isActive ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
       }`}
-      style={{ perspective: '1800px' }} // Strong perspective for depth
     >
-      {/* Background Marquee Layer (Kept as requested) */}
+      {/* Background Marquee Layer */}
       <div className="hidden md:flex absolute inset-0 pointer-events-none z-[-1] overflow-hidden opacity-[0.08] justify-center items-center gap-6 scale-[1.1]">
         <style>{`
           @keyframes marqueeUp {
-            0% { transform: translateY(0) translateZ(0); }
-            100% { transform: translateY(-50%) translateZ(0); }
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
           }
           @keyframes marqueeDown {
-            0% { transform: translateY(-50%) translateZ(0); }
-            100% { transform: translateY(0) translateZ(0); }
+            0% { transform: translateY(-50%); }
+            100% { transform: translateY(0); }
           }
         `}</style>
         {[...Array(7)].map((_, colIndex) => {
@@ -205,14 +204,9 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
 
       <div 
         className="absolute top-1/2 left-1/2 w-0 h-0 flex items-center justify-center" 
-        style={{ 
-          transformStyle: 'preserve-3d',
-          // RotateX(-8deg) gives the arched look (center higher, edges lower)
-          // translateY pushes the whole carousel to visually center it after rotation
-          transform: 'rotateX(-8deg) translateY(-20px)' 
-        }}
+        style={{ transform: 'translateY(-20px)' }}
       >
-        <div ref={wrapperRef} className="absolute inset-0" style={{ transformStyle: 'preserve-3d' }}>
+        <div ref={wrapperRef} className="absolute inset-0">
           {displayItems.map((item, i) => (
             <div
               key={`${item.id}-${i}`}
@@ -226,7 +220,6 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
                 height: `${cardHeight}px`,
                 marginLeft: `-${cardWidth / 2}px`,
                 marginTop: `-${cardHeight / 2}px`,
-                transformOrigin: 'center center',
               }}
             >
               <div 
@@ -258,7 +251,7 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
                   />
                 )}
                 
-                {/* Title overlay - visible only on hover or when centered */}
+                {/* Title overlay */}
                 <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                   <h3 className="text-[#f4f4f0] text-xs font-bold tracking-tight drop-shadow-md break-words">
                     {item.desc}
@@ -271,7 +264,7 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
       </div>
 
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-[#1a1a1a]/80 backdrop-blur-md px-6 py-3 rounded-full font-mono text-[10px] text-[#f4f4f0] tracking-[0.2em] uppercase z-50 pointer-events-none shadow-lg border border-white/10 whitespace-nowrap">
-        {isMobile ? 'Swipe to Rotate' : 'Scroll or Drag to Rotate'}
+        {isMobile ? 'Swipe to Scroll' : 'Scroll or Drag'}
       </div>
     </div>
   );

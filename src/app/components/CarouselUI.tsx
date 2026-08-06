@@ -9,13 +9,11 @@ interface CarouselUIProps {
 }
 
 export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
-  const wrapperRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
   
-  // Rotation states
-  const targetRotation = useRef(0);
-  const currentRotation = useRef(0);
-  const hoverVelocity = useRef(0);
+  // Scroll states (using index space, e.g., 0 = first item, 1 = second item)
+  const targetScrollIndex = useRef(0);
+  const currentScrollIndex = useRef(0);
   
   // Drag states
   const isDragging = useRef(false);
@@ -24,22 +22,24 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
 
   // Responsive variables
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  const radius = isMobile ? 320 : 480; // 늘어난 반지름으로 카드 간격 확보
-  const cardWidth = isMobile ? 160 : 240;
-  const cardHeight = isMobile ? 240 : 320;
-  const items = projects; // Use projects from props
+  const cardWidth = isMobile ? 200 : 320;
+  const cardHeight = isMobile ? 300 : 450;
+  const items = projects;
 
   useEffect(() => {
     if (!isActive) return;
 
-    // 인트로 클릭 시 "팽글팽글" 돌아가는 등장 효과: -1080도(3바퀴)에서 0도로 감속하며 안착
-    currentRotation.current = -1080;
-    targetRotation.current = 0;
+    // Reset to beginning on open
+    currentScrollIndex.current = -2; // Start from outside
+    targetScrollIndex.current = 0;
 
     let animationFrameId: number;
 
     const handleWheel = (e: WheelEvent) => {
-      targetRotation.current -= e.deltaY * 0.15; // 마우스 휠 스크롤 회전 감도
+      // Prevent default to stop full page scrolling if desired (usually handled globally)
+      const delta = e.deltaY || e.deltaX;
+      targetScrollIndex.current += delta * 0.003;
+      clampTarget();
     };
 
     const handlePointerDown = (e: PointerEvent) => {
@@ -49,90 +49,99 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
 
     const handlePointerMove = (e: PointerEvent) => {
       if (isDragging.current) {
-        hoverVelocity.current = 0;
         const delta = e.clientX - startX.current;
-        const sensitivity = isMobile ? 0.8 : 0.4; // 드래그 회전 감도 (모바일은 더 민감하게)
-        targetRotation.current += delta * sensitivity;
+        const sensitivity = isMobile ? 0.008 : 0.004;
+        targetScrollIndex.current -= delta * sensitivity;
+        clampTarget();
         startX.current = e.clientX;
-        return;
       }
+    };
 
-      // 모바일에서는 가장자리 호버 회전 효과 비활성화 (드래그만 사용)
-      if (isMobile) return;
-
-      // 커서가 화면 가장자리에 있을 때의 회전 속도 계산
-      const x = e.clientX;
-      const width = window.innerWidth;
-      const margin = width * 0.25; // 화면 양쪽 25% 영역
-
-      if (x < margin) {
-        const factor = (margin - x) / margin;
-        hoverVelocity.current = factor * 1.5; // 왼쪽 가장자리 근처 속도 조절
-      } else if (x > width - margin) {
-        const factor = (x - (width - margin)) / margin;
-        hoverVelocity.current = -factor * 1.5; // 오른쪽 가장자리 근처 속도 조절
-      } else {
-        hoverVelocity.current = 0;
+    const clampTarget = () => {
+      if (targetScrollIndex.current < 0) {
+        targetScrollIndex.current = 0;
+      } else if (targetScrollIndex.current > items.length - 1) {
+        targetScrollIndex.current = items.length - 1;
       }
     };
 
     const handlePointerUp = () => {
       isDragging.current = false;
-    };
-
-    const handlePointerLeave = () => {
-      hoverVelocity.current = 0;
+      // Snap to nearest integer on release
+      targetScrollIndex.current = Math.round(targetScrollIndex.current);
+      clampTarget();
     };
 
     window.addEventListener('wheel', handleWheel, { passive: true });
     window.addEventListener('pointerdown', handlePointerDown);
     window.addEventListener('pointermove', handlePointerMove);
     window.addEventListener('pointerup', handlePointerUp);
-    document.addEventListener('pointerleave', handlePointerLeave);
+    
+    // Add touch end to handle snap on mobile correctly
+    window.addEventListener('touchend', handlePointerUp);
 
     const animate = () => {
-      // 호버나 드래그 중이 아닐 때 가장 가까운 항목으로 스냅(정렬)
-      if (!isDragging.current && hoverVelocity.current === 0) {
-        const itemAngle = 360 / items.length;
-        const nearestSnap = Math.round(targetRotation.current / itemAngle) * itemAngle;
-        targetRotation.current += (nearestSnap - targetRotation.current) * 0.05;
-      }
+      // Lerp for smooth scrolling wave effect
+      currentScrollIndex.current += (targetScrollIndex.current - currentScrollIndex.current) * 0.06;
 
-      // 호버에 의한 지속 회전 적용
-      targetRotation.current += hoverVelocity.current;
-
-      // Lerp(보간)를 통해 회전이 부드럽게 감속하며 안착하도록 처리
-      currentRotation.current += (targetRotation.current - currentRotation.current) * 0.04;
-
-      if (wrapperRef.current) {
-        // 전체 래퍼를 Y축 기준으로 회전
-        wrapperRef.current.style.transform = `rotateY(${currentRotation.current}deg)`;
-      }
+      const spineSpacing = isMobile ? 35 : 55;
+      const centerSpacing = isMobile ? 140 : 220;
+      const maxRotation = 82; // 82 degrees creates a good "spine" look
 
       cardsRef.current.forEach((card, i) => {
         if (!card) return;
-        const itemAngle = i * (360 / items.length);
         
-        // 카드의 절대적인 각도 위치를 계산 (뒤에 있는 카드들을 흐리게 처리하기 위함)
-        const rad = (itemAngle + currentRotation.current) * (Math.PI / 180);
-        const z = Math.cos(rad); // 1 = 가장 앞쪽, -1 = 가장 뒤쪽
+        // Difference in index between this card and the current scroll focus
+        const diff = i - currentScrollIndex.current;
+        const absDiff = Math.abs(diff);
         
-        let opacity = 1.0;
-        let scale = 1.0;
-        let pointerEvents = 'auto';
+        // 1. Calculate X Position
+        let pushAmount = 0;
+        if (diff > 0) {
+          pushAmount = Math.min(diff, 1) * centerSpacing;
+        } else if (diff < 0) {
+          pushAmount = Math.max(diff, -1) * centerSpacing;
+        }
+        const translateX = diff * spineSpacing + pushAmount;
 
-        // z값이 0보다 작으면 원기둥의 뒤쪽 반원에 위치함
-        if (z < 0) {
-          opacity = Math.max(0.1, 1 + z * 1.5); // 뒤로 갈수록 투명해짐
-          scale = Math.max(0.85, 1 + z * 0.15); // 뒤로 갈수록 살짝 작아짐
-          pointerEvents = 'none'; // 뒤에 있는 카드는 클릭 불가
+        // 2. Calculate Rotation Y
+        let rotateY = 0;
+        if (diff > 0) {
+          rotateY = Math.min(diff, 1) * -maxRotation;
+        } else if (diff < 0) {
+          rotateY = Math.max(diff, -1) * -maxRotation; 
         }
 
+        // 3. Calculate Z translation and Scale for "Pop out" effect
+        let translateZ = 0;
+        let scale = 1.0;
+        let opacity = 1.0;
+        let pointerEvents = 'auto';
+
+        if (absDiff < 1) {
+          // Transitioning through center
+          translateZ = (1 - absDiff) * (isMobile ? 150 : 300);
+          scale = 1 + (1 - absDiff) * 0.15;
+          opacity = 1;
+        } else {
+          // Outside center (Spines)
+          translateZ = 0;
+          scale = 1;
+          opacity = Math.max(0.3, 1 - (absDiff - 1) * 0.2); // Fade out items far away
+        }
+
+        // Only allow clicking on the center item
+        if (absDiff > 0.5) {
+          pointerEvents = 'none';
+        }
+
+        // Calculate z-index: Center item is highest
+        const zIndex = 100 - Math.round(absDiff * 10);
+
         card.style.opacity = opacity.toFixed(3);
+        card.style.zIndex = zIndex.toString();
         card.style.pointerEvents = pointerEvents;
-        
-        // 카드 개별 위치 및 원근 스케일 적용 (Y축 회전으로 둥글게 배치 후 Z축으로 밀어냄)
-        card.style.transform = `rotateY(${itemAngle}deg) translateZ(${radius}px) scale(${scale.toFixed(3)})`;
+        card.style.transform = `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale.toFixed(3)})`;
       });
 
       animationFrameId = requestAnimationFrame(animate);
@@ -145,10 +154,10 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
       window.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
-      document.removeEventListener('pointerleave', handlePointerLeave);
+      window.removeEventListener('touchend', handlePointerUp);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [isActive, items.length, radius, isMobile]);
+  }, [isActive, items.length, isMobile]);
 
   useEffect(() => {
     if (!isActive) {
@@ -163,9 +172,9 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
       className={`fixed inset-0 w-screen h-[100dvh] z-40 transition-opacity duration-1000 overflow-hidden select-none touch-none ${
         isActive ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
       }`}
-      style={{ perspective: '1500px' }} // 원근감 깊이 조정
+      style={{ perspective: '1200px' }} // Perspective depth for the 3D effect
     >
-      {/* 백그라운드 갤러리 애니메이션 레이어 (모바일에서는 숨김 처리하여 성능 최적화) */}
+      {/* Background Marquee Layer (Unchanged) */}
       <div className="hidden md:flex absolute inset-0 pointer-events-none z-[-1] overflow-hidden opacity-[0.08] justify-center items-center gap-6 scale-[1.1]">
         <style>{`
           @keyframes marqueeUp {
@@ -177,7 +186,6 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
             100% { transform: translateY(0) translateZ(0); }
           }
         `}</style>
-        {/* DOM 개수를 절반(7열)으로 줄이고, 무거운 CSS 필터(blur, mix-blend-mode) 제거 후 하드웨어 가속 추가 */}
         {[...Array(7)].map((_, colIndex) => {
           const offsetItems = [...items.slice(colIndex % items.length), ...items.slice(0, colIndex % items.length)];
           const columnItems = [...offsetItems, ...offsetItems];
@@ -209,79 +217,86 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
       </div>
 
       <div 
-        className="absolute top-1/2 left-1/2 w-0 h-0" 
-        style={{ 
-          transformStyle: 'preserve-3d', 
-          transform: 'rotateX(0deg)' // 기울기 제거, 완전한 정면
-        }}
+        className="absolute top-1/2 left-1/2 w-0 h-0 flex items-center justify-center" 
+        style={{ transformStyle: 'preserve-3d' }}
       >
-        <div ref={wrapperRef} className="absolute inset-0" style={{ transformStyle: 'preserve-3d' }}>
-          {items.map((item, i) => (
-            <div
-              key={`${item.id}-${i}`}
-              ref={(el) => (cardsRef.current[i] = el)}
-              onClick={() => onSelect(item)}
-              onMouseEnter={() => (isHovering.current = true)}
-              onMouseLeave={() => (isHovering.current = false)}
-              className="absolute group cursor-pointer"
-              style={{
-                width: `${cardWidth}px`,
-                height: `${cardHeight}px`,
-                marginLeft: `-${cardWidth / 2}px`,
-                marginTop: `-${cardHeight / 2}px`,
-                // 초기 위치 렌더링
-                transform: `rotateY(${i * (360 / items.length)}deg) translateZ(${radius}px)`,
-              }}
+        {items.map((item, i) => (
+          <div
+            key={`${item.id}-${i}`}
+            ref={(el) => (cardsRef.current[i] = el)}
+            onClick={() => onSelect(item)}
+            onMouseEnter={() => (isHovering.current = true)}
+            onMouseLeave={() => (isHovering.current = false)}
+            className="absolute flex items-center justify-center cursor-pointer transition-colors duration-500 will-change-transform"
+            style={{
+              width: `${cardWidth}px`,
+              height: `${cardHeight}px`,
+              marginLeft: `-${cardWidth / 2}px`,
+              marginTop: `-${cardHeight / 2}px`,
+              transformOrigin: 'center center',
+            }}
+          >
+            <div 
+              className={`w-full h-full relative transition-transform duration-500 ease-out group-hover:scale-[1.02] ${
+                'isLogo' in item && item.isLogo 
+                  ? 'flex items-center justify-center' 
+                  : 'overflow-hidden rounded-md bg-[#1a1a1a] shadow-[0_20px_40px_rgba(0,0,0,0.6)] border border-white/10'
+              }`}
             >
-              <div 
-                className={`w-full h-full relative transition-transform duration-500 ease-out group-hover:scale-[1.05] ${
-                  'isLogo' in item && item.isLogo 
-                    ? 'flex items-center justify-center' 
-                    : 'overflow-hidden rounded-md bg-[#1a1a1a] shadow-[0_20px_40px_rgba(0,0,0,0.6)]'
-                }`}
-              >
-                {'isLogo' in item && item.isLogo ? (
-                  <>
-                    <img 
-                      src="/about_logo.webp" 
-                      alt="ABOUT US" 
-                      className="w-full h-full scale-[1.2] object-contain filter brightness-0 invert opacity-80 group-hover:opacity-100 group-hover:scale-[1.35] transition-all duration-700 ease-out select-none drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
-                      }}
-                    />
-                    <span className="hidden text-[100px] font-black tracking-tighter text-[#f4f4f0] opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700 ease-out select-none drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]">
-                      HMS
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <ImageWithFallback
-                      src={item.img}
-                      alt={item.title}
-                      className="w-full h-full object-cover transition-all duration-700 ease-out brightness-[0.5] group-hover:brightness-110 group-hover:scale-110 pointer-events-none"
-                    />
-                    <div className="absolute inset-0 bg-black/30 group-hover:bg-transparent transition-colors duration-500 border border-white/5 pointer-events-none" />
-                  </>
-                )}
-                <div className="absolute bottom-4 left-4 right-4 md:bottom-6 md:left-6 md:right-6 z-20 transition-transform duration-[400ms] group-hover:-translate-y-2 pointer-events-none">
-                  <h3 className="text-[#f4f4f0] text-xs md:text-lg font-bold tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] break-words leading-tight">
-                    {item.desc}
-                  </h3>
-                  <p className="text-[#f4f4f0]/80 text-[10px] font-mono uppercase tracking-widest mt-2 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
-                    {'isLogo' in item && item.isLogo ? 'ABOUT US' : 'ENTER PROJECT'}
-                  </p>
-                </div>
+              {'isLogo' in item && item.isLogo ? (
+                <>
+                  <img 
+                    src="/about_logo.webp" 
+                    alt="ABOUT US" 
+                    className="w-full h-full scale-[1.2] object-contain filter brightness-0 invert opacity-90 transition-all duration-700 ease-out select-none drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                    }}
+                  />
+                  <span className="hidden text-[100px] font-black tracking-tighter text-[#f4f4f0] opacity-90 transition-all duration-700 ease-out select-none drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]">
+                    HMS
+                  </span>
+                </>
+              ) : (
+                <>
+                  <ImageWithFallback
+                    src={item.img}
+                    alt={item.title}
+                    className="w-full h-full object-cover transition-all duration-700 ease-out brightness-[0.7] group-hover:brightness-110 pointer-events-none"
+                  />
+                  {/* Subtle overlay for inactive cards to make them look more like spines when rotated */}
+                  <div className="absolute inset-0 bg-black/20 transition-colors duration-500 pointer-events-none" />
+                </>
+              )}
+              
+              {/* Title & Detail Overlay - only prominent when facing front */}
+              <div className="absolute bottom-4 left-4 right-4 md:bottom-6 md:left-6 md:right-6 z-20 pointer-events-none">
+                <h3 className="text-[#f4f4f0] text-xs md:text-lg font-bold tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] break-words leading-tight">
+                  {item.desc}
+                </h3>
+                <p className="text-[#f4f4f0]/80 text-[10px] font-mono uppercase tracking-widest mt-2 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+                  {'isLogo' in item && item.isLogo ? 'ABOUT US' : 'ENTER PROJECT'}
+                </p>
               </div>
+              
+              {/* Darkening shadow that appears on the spine edges */}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-black/80 opacity-0 transition-opacity duration-300 pointer-events-none spine-shadow" />
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
 
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-[#1a1a1a]/80 backdrop-blur-md px-6 py-3 rounded-full font-mono text-[10px] text-[#f4f4f0] tracking-[0.2em] uppercase z-50 pointer-events-none shadow-lg border border-white/10 whitespace-nowrap">
-        {isMobile ? 'Swipe to Rotate' : 'Hover edges or Drag to Rotate'}
+        {isMobile ? 'Swipe to Explore' : 'Scroll or Drag to Explore'}
       </div>
+      
+      {/* Add a global style to fade in the edge shadows when rotated */}
+      <style>{`
+        .spine-shadow {
+          opacity: 0 !important;
+        }
+      `}</style>
     </div>
   );
 }

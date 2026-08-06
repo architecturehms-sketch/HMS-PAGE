@@ -22,8 +22,8 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
 
   // Responsive variables
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  const cardWidth = isMobile ? 200 : 320;
-  const cardHeight = isMobile ? 300 : 450;
+  const cardWidth = isMobile ? 140 : 220;
+  const cardHeight = isMobile ? 210 : 330;
   const items = projects;
 
   useEffect(() => {
@@ -84,8 +84,8 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
       // Lerp for smooth scrolling wave effect
       currentScrollIndex.current += (targetScrollIndex.current - currentScrollIndex.current) * 0.06;
 
-      const spineSpacing = isMobile ? 35 : 55;
-      const centerSpacing = isMobile ? 140 : 220;
+      const spineSpacing = isMobile ? 30 : 45;
+      const centerSpacing = isMobile ? 110 : 160;
       const maxRotation = 82; // 82 degrees creates a good "spine" look
 
       cardsRef.current.forEach((card, i) => {
@@ -120,8 +120,8 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
 
         if (absDiff < 1) {
           // Transitioning through center
-          translateZ = (1 - absDiff) * (isMobile ? 150 : 300);
-          scale = 1 + (1 - absDiff) * 0.15;
+          translateZ = (1 - absDiff) * (isMobile ? 100 : 150);
+          scale = 1 + (1 - absDiff) * 0.1;
           opacity = 1;
         } else {
           // Outside center (Spines)

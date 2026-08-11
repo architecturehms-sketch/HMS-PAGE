@@ -207,6 +207,8 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
               onMouseUp={handleMouseUp}
               onMouseMove={handleMouseMove}
               className={`w-full overflow-x-auto flex flex-nowrap gap-1 md:gap-2 px-6 md:px-12 pb-8 hide-scrollbar select-none ${
+                displayImages.length === 3 ? 'justify-center' : ''
+              } ${
                 isDragging ? 'cursor-grabbing snap-none' : 'cursor-grab snap-x snap-mandatory scroll-smooth'
               }`}
             >

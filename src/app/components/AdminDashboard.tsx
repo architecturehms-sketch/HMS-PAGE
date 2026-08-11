@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
-import { X, Plus, Edit2, Trash2, Save, Image as ImageIcon, LayoutDashboard, FileText, Settings, Database, LogOut, GripVertical } from 'lucide-react';
+import { X, Plus, Edit2, Trash2, Save, Image as ImageIcon, LayoutDashboard, FileText, Settings, Database, LogOut, GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
 import { auth, db, storage } from '../../lib/firebase';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { collection, addDoc, updateDoc, deleteDoc, doc, setDoc, writeBatch, getDocs } from 'firebase/firestore';
@@ -14,6 +14,7 @@ const ItemTypes = {
   PROJECT: 'project',
   TEAM: 'team',
   CATEGORY: 'category',
+  IMAGE: 'image',
 };
 
 interface DraggableProjectRowProps {
@@ -228,6 +229,86 @@ function DraggableCategoryRow({ category, index, moveCategory, onDelete }: Dragg
       <button onClick={() => onDelete(category)} type="button" className="text-red-400 hover:text-red-300 ml-2">
         <X size={12} />
       </button>
+    </div>
+  );
+}
+
+interface DraggableImageRowProps {
+  index: number;
+  url: string;
+  hasImage: boolean;
+  uploading: boolean;
+  moveImage: (dragIndex: number, hoverIndex: number) => void;
+  onUpdate: (val: string) => void;
+  onDelete: () => void;
+  onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+function DraggableImageRow({ index, url, hasImage, uploading, moveImage, onUpdate, onDelete, onUpload }: DraggableImageRowProps) {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const [{ handlerId }, drop] = useDrop({
+    accept: ItemTypes.IMAGE,
+    collect(monitor) { return { handlerId: monitor.getHandlerId() }; },
+    hover(item: any, monitor) {
+      if (!ref.current) return;
+      const dragIndex = item.index;
+      const hoverIndex = index;
+      if (dragIndex === hoverIndex) return;
+      const hoverBoundingRect = ref.current?.getBoundingClientRect();
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      const clientOffset = monitor.getClientOffset();
+      if (!clientOffset) return;
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
+      moveImage(dragIndex, hoverIndex);
+      item.index = hoverIndex;
+    },
+  });
+  const [{ isDragging }, drag, preview] = useDrag({
+    type: ItemTypes.IMAGE,
+    item: () => ({ id: `img-${index}`, index }),
+    collect: (monitor) => ({ isDragging: monitor.isDragging() }),
+  });
+  preview(drop(ref));
+  return (
+    <div ref={ref} data-handler-id={handlerId} className={`flex gap-4 items-start border border-[#f4f4f0]/10 p-4 ${isDragging ? 'opacity-50' : 'opacity-100'}`}>
+      <div ref={drag} className="flex flex-col gap-1 items-center justify-center shrink-0 w-8 cursor-grab text-[#f4f4f0]/40 hover:text-white mt-4">
+        <GripVertical size={16} />
+        <span className="text-[10px] font-mono opacity-30 mt-2">{index + 1}</span>
+      </div>
+      <div className="flex-1 flex flex-col justify-center">
+        <input 
+          type="text" 
+          value={url}
+          onChange={e => onUpdate(e.target.value)}
+          className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-xs focus:outline-none focus:border-[#f4f4f0]"
+          placeholder={`Image URL ${index + 1}`}
+        />
+        <div className="mt-2 flex items-center gap-4">
+          <label className={`text-[10px] uppercase tracking-widest text-[#f4f4f0] border border-[#f4f4f0]/30 px-3 py-1 cursor-pointer transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#f4f4f0] hover:text-[#1a1a1a]'}`}>
+            {uploading ? 'UPLOADING...' : 'UPLOAD'}
+            <input type="file" className="hidden" accept="image/*" disabled={uploading} onChange={onUpload} />
+          </label>
+          
+          {hasImage && (
+            <button 
+              type="button"
+              onClick={onDelete}
+              className="text-[10px] flex items-center gap-1 uppercase tracking-widest text-red-400 hover:text-red-300 transition-colors"
+            >
+              <Trash2 size={12} /> DELETE
+            </button>
+          )}
+        </div>
+      </div>
+      <div className="w-20 h-20 border border-[#f4f4f0]/30 flex items-center justify-center bg-[#1a1a1a] overflow-hidden shrink-0">
+        {url ? (
+          <img src={url} alt={`Detail ${index + 1}`} className="w-full h-full object-cover" />
+        ) : (
+          <ImageIcon className="text-[#f4f4f0]/20" size={16} />
+        )}
+      </div>
     </div>
   );
 }
@@ -1069,37 +1150,41 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
                         <h3 className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60">Detail Page Images (Up to 20)</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {Array.from({ length: 20 }).map((_, index) => {
-                            const detailImgs = editingProject.detailImages || Array(20).fill('');
-                            const url = detailImgs[index];
+                            const detailImgs = editingProject.detailImages || [];
+                            const url = detailImgs[index] || '';
+                            const hasImage = !!url;
+
                             return (
-                              <div key={index} className="flex gap-4 items-start border border-[#f4f4f0]/10 p-4">
-                                <div className="flex-1">
-                                  <input 
-                                    type="text" 
-                                    value={url}
-                                    onChange={e => {
-                                      const newImgs = [...detailImgs];
-                                      newImgs[index] = e.target.value;
-                                      setEditingProject({...editingProject, detailImages: newImgs});
-                                    }}
-                                    className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-xs focus:outline-none focus:border-[#f4f4f0]"
-                                    placeholder={`Image URL ${index + 1}`}
-                                  />
-                                  <div className="mt-2 flex items-center">
-                                    <label className={`text-[10px] uppercase tracking-widest text-[#f4f4f0] mr-3 border border-[#f4f4f0]/30 px-3 py-1 cursor-pointer transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#f4f4f0] hover:text-[#1a1a1a]'}`}>
-                                      {uploading ? 'UPLOADING...' : 'UPLOAD'}
-                                      <input type="file" className="hidden" accept="image/*" disabled={uploading} onChange={(e) => handleFileUpload(e, index)} />
-                                    </label>
-                                  </div>
-                                </div>
-                                <div className="w-16 h-16 border border-[#f4f4f0]/30 flex items-center justify-center bg-[#1a1a1a] overflow-hidden shrink-0">
-                                  {url ? (
-                                    <img src={url} alt={`Detail ${index + 1}`} className="w-full h-full object-cover" />
-                                  ) : (
-                                    <ImageIcon className="text-[#f4f4f0]/20" size={14} />
-                                  )}
-                                </div>
-                              </div>
+                              <DraggableImageRow 
+                                key={`img-row-${index}`}
+                                index={index}
+                                url={url}
+                                hasImage={hasImage}
+                                uploading={uploading}
+                                moveImage={(dragIndex, hoverIndex) => {
+                                  setEditingProject(prev => {
+                                    if (!prev) return prev;
+                                    const newImgs = [...(prev.detailImages || [])];
+                                    while (newImgs.length <= Math.max(dragIndex, hoverIndex)) newImgs.push('');
+                                    const draggedImg = newImgs[dragIndex];
+                                    newImgs.splice(dragIndex, 1);
+                                    newImgs.splice(hoverIndex, 0, draggedImg);
+                                    return { ...prev, detailImages: newImgs };
+                                  });
+                                }}
+                                onUpdate={(val) => {
+                                  const newImgs = [...(editingProject.detailImages || [])];
+                                  while (newImgs.length <= index) newImgs.push('');
+                                  newImgs[index] = val;
+                                  setEditingProject({...editingProject, detailImages: newImgs});
+                                }}
+                                onDelete={() => {
+                                  const newImgs = [...(editingProject.detailImages || [])];
+                                  newImgs.splice(index, 1);
+                                  setEditingProject({...editingProject, detailImages: newImgs});
+                                }}
+                                onUpload={(e) => handleFileUpload(e, index)}
+                              />
                             );
                           })}
                         </div>

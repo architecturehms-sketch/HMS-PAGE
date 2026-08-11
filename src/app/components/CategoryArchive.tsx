@@ -3,7 +3,7 @@ import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { Project, PageData } from '../../hooks/useFirebaseData';
 import { motion } from 'motion/react';
-import { X, ArrowLeft } from 'lucide-react';
+import { X, ArrowLeft, Play } from 'lucide-react';
 
 interface CategoryArchiveProps {
   category: string;
@@ -68,6 +68,11 @@ export function CategoryArchive({ category, projects, pageData, onClose, onSelec
                 className={`group cursor-pointer flex flex-col animate-[fadeIn_0.5s_ease-out] hover:-translate-y-2 transition-transform duration-500 ${idx % 2 !== 0 ? 'md:mt-12' : 'mt-0'}`}
               >
                 <div className="overflow-hidden mb-4 bg-gray-200 w-full relative" style={{ aspectRatio: idx % 3 === 0 ? '3/4' : idx % 3 === 1 ? '1/1' : '4/5' }}>
+                  {item.videoUrl && (
+                    <div className="absolute top-2 right-2 md:top-4 md:right-4 bg-black/30 backdrop-blur-md rounded-full p-2 z-10 text-white/90 group-hover:bg-black/50 transition-colors">
+                      <Play size={12} fill="currentColor" />
+                    </div>
+                  )}
                   <ImageWithFallback 
                     src={item.img} 
                     alt={item.title} 

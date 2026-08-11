@@ -7,11 +7,15 @@ interface ImageWithFallbackProps extends React.ImgHTMLAttributes<HTMLImageElemen
 export function ImageWithFallback(props: ImageWithFallbackProps) {
   const [didError, setDidError] = useState(false)
 
+  const { src, alt, style, className, priority, ...rest } = props
+
+  React.useEffect(() => {
+    setDidError(false);
+  }, [src]);
+
   const handleError = () => {
     setDidError(true)
   }
-
-  const { src, alt, style, className, priority, ...rest } = props
 
   if (!src || didError) {
     return (

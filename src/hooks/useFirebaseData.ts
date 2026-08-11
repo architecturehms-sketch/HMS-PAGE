@@ -40,6 +40,7 @@ export interface PageData {
   address: string;
   clientLogos?: string[];
   customCategories?: string[];
+  categoryProjectOrders?: { [category: string]: string[] };
 }
 
 const defaultPageData: PageData = {
@@ -48,6 +49,7 @@ const defaultPageData: PageData = {
   address: "Seoul, KR",
   clientLogos: [],
   customCategories: [],
+  categoryProjectOrders: {},
 };
 
 export interface MapLocation {

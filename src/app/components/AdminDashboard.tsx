@@ -319,9 +319,25 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
   const [isSavingChanges, setIsSavingChanges] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isNewCategory, setIsNewCategory] = useState(false);
+  
+  const [selectedProjectCategory, setSelectedProjectCategory] = useState<string | null>(null);
 
   const projectCategories = Array.from(new Set(projects.flatMap(p => typeof p.desc === 'string' ? p.desc.split(',').map(c => c.trim()) : []))).filter(Boolean) as string[];
   const existingCategories = Array.from(new Set([...(pageData?.customCategories || []), ...projectCategories]));
+
+  const filteredProjects = React.useMemo(() => {
+    if (!selectedProjectCategory) return projects;
+    const orderList = pageData.categoryProjectOrders?.[selectedProjectCategory] || [];
+    return projects.filter(p => p.desc && p.desc.split(',').map(c => c.trim()).includes(selectedProjectCategory))
+      .sort((a, b) => {
+        const indexA = orderList.indexOf(a.id as string);
+        const indexB = orderList.indexOf(b.id as string);
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+        return 0;
+      });
+  }, [projects, selectedProjectCategory, pageData.categoryProjectOrders]);
 
   useEffect(() => {
     if (!hasUnsavedChanges) {
@@ -496,15 +512,49 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
   };
 
   const moveProject = useCallback((dragIndex: number, hoverIndex: number) => {
-    setProjects((prevProjects) => {
-      const newProjects = [...prevProjects];
-      const draggedProject = newProjects[dragIndex];
-      newProjects.splice(dragIndex, 1);
-      newProjects.splice(hoverIndex, 0, draggedProject);
-      return newProjects;
-    });
-    setHasUnsavedChanges(true);
-  }, []);
+    if (selectedProjectCategory) {
+      setPageData(prev => {
+        const currentOrder = prev.categoryProjectOrders?.[selectedProjectCategory] || filteredProjects.map(p => p.id as string);
+        
+        const currentFiltered = projects.filter(p => p.desc && p.desc.split(',').map(c => c.trim()).includes(selectedProjectCategory))
+          .sort((a, b) => {
+            const indexA = currentOrder.indexOf(a.id as string);
+            const indexB = currentOrder.indexOf(b.id as string);
+            if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+            if (indexA !== -1) return -1;
+            if (indexB !== -1) return 1;
+            return 0;
+          });
+          
+        const draggedId = currentFiltered[dragIndex]?.id as string;
+        const hoverId = currentFiltered[hoverIndex]?.id as string;
+        
+        if (!draggedId || !hoverId) return prev;
+
+        const newOrder = currentFiltered.map(p => p.id as string);
+        newOrder.splice(dragIndex, 1);
+        newOrder.splice(hoverIndex, 0, draggedId);
+        
+        return {
+          ...prev,
+          categoryProjectOrders: {
+            ...prev.categoryProjectOrders,
+            [selectedProjectCategory]: newOrder
+          }
+        };
+      });
+      setHasUnsavedChanges(true);
+    } else {
+      setProjects((prevProjects) => {
+        const newProjects = [...prevProjects];
+        const draggedProject = newProjects[dragIndex];
+        newProjects.splice(dragIndex, 1);
+        newProjects.splice(hoverIndex, 0, draggedProject);
+        return newProjects;
+      });
+      setHasUnsavedChanges(true);
+    }
+  }, [selectedProjectCategory, filteredProjects]);
 
   const moveTeamMember = useCallback((dragIndex: number, hoverIndex: number) => {
     setTeam((prevTeam) => {
@@ -611,6 +661,10 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
           });
         }
       });
+      
+      // Save Page Data
+      const pageDataRef = doc(db, 'settings', 'pageData');
+      batch.set(pageDataRef, pageData, { merge: true });
       
       await batch.commit();
       setHasUnsavedChanges(false);
@@ -1102,16 +1156,32 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
                   </form>
                 </div>
               ) : (
-                <div className="border border-[#f4f4f0]/20">
-                  <div className="grid grid-cols-12 gap-4 p-4 border-b border-[#f4f4f0]/20 text-[10px] uppercase tracking-widest text-[#f4f4f0]/60 bg-[#111]">
-                    <div className="col-span-1">ID</div>
-                    <div className="col-span-4">Project</div>
-                    <div className="col-span-3">Typology</div>
-                    <div className="col-span-2">Year</div>
-                    <div className="col-span-2 text-right">Actions</div>
+                <div>
+                  <div className="flex justify-between items-center mb-4 px-2">
+                    <div className="flex items-center gap-3">
+                      <span className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60">Reorder In:</span>
+                      <select 
+                        value={selectedProjectCategory || ''} 
+                        onChange={e => setSelectedProjectCategory(e.target.value || null)}
+                        className="bg-transparent border border-[#f4f4f0]/30 px-3 py-1.5 text-xs text-[#f4f4f0] focus:outline-none focus:border-[#f4f4f0] uppercase tracking-widest cursor-pointer"
+                      >
+                        <option value="" className="bg-[#111]">Global Order (All)</option>
+                        {existingCategories.map(cat => (
+                          <option key={cat} value={cat} className="bg-[#111]">{cat}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
+                  <div className="border border-[#f4f4f0]/20">
+                    <div className="grid grid-cols-12 gap-4 p-4 border-b border-[#f4f4f0]/20 text-[10px] uppercase tracking-widest text-[#f4f4f0]/60 bg-[#111]">
+                      <div className="col-span-1">ID</div>
+                      <div className="col-span-4">Project</div>
+                      <div className="col-span-3">Typology</div>
+                      <div className="col-span-2">Year</div>
+                      <div className="col-span-2 text-right">Actions</div>
+                    </div>
                   <div className="divide-y divide-[#f4f4f0]/10">
-                    {projects.map((project, index) => (
+                    {filteredProjects.map((project, index) => (
                       <DraggableProjectRow 
                         key={project.id}
                         project={project}
@@ -1125,6 +1195,7 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
                       />
                     ))}
                   </div>
+                </div>
                 </div>
               )}
             </motion.div>

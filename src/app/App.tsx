@@ -109,7 +109,17 @@ export default function App() {
       showInCarousel: true,
     },
     ...existingCategories.filter(cat => cat !== 'ABOUT US').map(cat => {
-      const firstProject = projects.find(p => p.desc && p.desc.split(',').map(c => c.trim()).includes(cat) && !p.isLogo && p.img);
+      const orderList = pageData?.categoryProjectOrders?.[cat] || [];
+      const catProjects = projects.filter(p => p.desc && p.desc.split(',').map(c => c.trim()).includes(cat) && !p.isLogo && p.img)
+        .sort((a, b) => {
+          const indexA = orderList.indexOf(a.id as string);
+          const indexB = orderList.indexOf(b.id as string);
+          if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+          if (indexA !== -1) return -1;
+          if (indexB !== -1) return 1;
+          return 0;
+        });
+      const firstProject = catProjects[0];
       return {
         id: `cat-${cat}`,
         isCategory: true,
@@ -151,6 +161,7 @@ export default function App() {
             key="category-archive"
             category={selectedCategory} 
             projects={projects} 
+            pageData={pageData || undefined}
             onClose={() => window.history.back()} 
             onSelectProject={handleSelectProjectFromCategory}
           />

@@ -120,14 +120,13 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
         card.style.pointerEvents = pointerEvents;
         card.style.zIndex = isCenter ? '10' : '1';
         
-        // Apply flat horizontal transform (No 3D rotation or Z translation)
-        card.style.transform = `translateX(${x}px)`;
+        // Apply flat horizontal transform and scale to the entire wrapper
+        card.style.transform = `translateX(${x}px) scale(${isCenter ? 1.05 : 1})`;
         
-        // Apply brightness and scale to the inner image container
+        // Apply brightness to the inner image container
         const inner = card.querySelector('.card-inner') as HTMLElement;
         if (inner) {
           inner.style.filter = `brightness(${isCenter ? 1.1 : brightness})`;
-          inner.style.transform = isCenter ? 'scale(1.05)' : 'scale(1)';
         }
       });
 
@@ -253,7 +252,7 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
               </div>
               
               {/* Title overlay outside card-inner to allow horizontal overflow */}
-              <div className="absolute inset-x-0 bottom-0 p-2 md:p-4 bg-gradient-to-t from-black/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none flex justify-center rounded-b-[2px]">
+              <div className={`absolute inset-x-0 bottom-0 p-2 md:p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none flex justify-center rounded-b-[2px] ${!('isLogo' in item && item.isLogo) ? 'bg-gradient-to-t from-black/90 to-transparent' : ''}`}>
                 <h3 className="text-[#f4f4f0] text-[9px] md:text-xs font-bold tracking-tight drop-shadow-md whitespace-nowrap break-keep">
                   {item.desc}
                 </h3>

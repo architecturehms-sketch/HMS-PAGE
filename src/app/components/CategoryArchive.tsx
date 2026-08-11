@@ -1,25 +1,34 @@
 import React, { useMemo } from 'react';
 import Masonry, { ResponsiveMasonry } from "react-responsive-masonry";
 import { ImageWithFallback } from './figma/ImageWithFallback';
-import { Project } from '../../hooks/useFirebaseData';
+import { Project, PageData } from '../../hooks/useFirebaseData';
 import { motion } from 'motion/react';
 import { X, ArrowLeft } from 'lucide-react';
 
 interface CategoryArchiveProps {
   category: string;
   projects: Project[];
+  pageData?: PageData;
   onClose: () => void;
   onSelectProject: (project: Project) => void;
 }
 
-export function CategoryArchive({ category, projects, onClose, onSelectProject }: CategoryArchiveProps) {
+export function CategoryArchive({ category, projects, pageData, onClose, onSelectProject }: CategoryArchiveProps) {
   const filteredProjects = useMemo(() => {
+    const orderList = pageData?.categoryProjectOrders?.[category] || [];
     return projects.filter(p => {
       if (p.isLogo || p.carouselOnly) return false;
       const cats = p.desc ? p.desc.split(',').map(c => c.trim()) : [];
       return cats.includes(category);
+    }).sort((a, b) => {
+      const indexA = orderList.indexOf(a.id as string);
+      const indexB = orderList.indexOf(b.id as string);
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+      return 0;
     });
-  }, [category, projects]);
+  }, [category, projects, pageData]);
 
   return (
     <motion.div 

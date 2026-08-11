@@ -14,7 +14,11 @@ interface CategoryArchiveProps {
 
 export function CategoryArchive({ category, projects, onClose, onSelectProject }: CategoryArchiveProps) {
   const filteredProjects = useMemo(() => {
-    return projects.filter(p => p.desc === category && !p.isLogo);
+    return projects.filter(p => {
+      if (p.isLogo || p.carouselOnly) return false;
+      const cats = p.desc ? p.desc.split(',').map(c => c.trim()) : [];
+      return cats.includes(category);
+    });
   }, [category, projects]);
 
   return (

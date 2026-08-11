@@ -13,6 +13,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 const ItemTypes = {
   PROJECT: 'project',
   TEAM: 'team',
+  CATEGORY: 'category',
 };
 
 interface DraggableProjectRowProps {
@@ -184,6 +185,53 @@ function DraggableTeamRow({ member, index, moveMember, onEdit, onDelete }: Dragg
   );
 }
 
+interface DraggableCategoryRowProps {
+  category: string;
+  index: number;
+  moveCategory: (dragIndex: number, hoverIndex: number) => void;
+  onDelete: (category: string) => void;
+}
+
+function DraggableCategoryRow({ category, index, moveCategory, onDelete }: DraggableCategoryRowProps) {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const [{ handlerId }, drop] = useDrop({
+    accept: ItemTypes.CATEGORY,
+    collect(monitor) { return { handlerId: monitor.getHandlerId() }; },
+    hover(item: any, monitor) {
+      if (!ref.current) return;
+      const dragIndex = item.index;
+      const hoverIndex = index;
+      if (dragIndex === hoverIndex) return;
+      const hoverBoundingRect = ref.current?.getBoundingClientRect();
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      const clientOffset = monitor.getClientOffset();
+      if (!clientOffset) return;
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
+      moveCategory(dragIndex, hoverIndex);
+      item.index = hoverIndex;
+    },
+  });
+  const [{ isDragging }, drag] = useDrag({
+    type: ItemTypes.CATEGORY,
+    item: () => ({ id: category, index }),
+    collect: (monitor) => ({ isDragging: monitor.isDragging() }),
+  });
+  drag(drop(ref));
+  return (
+    <div ref={ref} data-handler-id={handlerId} className={`flex items-center justify-between px-3 py-2 bg-[#1a1a1a] border border-[#f4f4f0]/20 rounded-sm text-xs ${isDragging ? 'opacity-50' : 'opacity-100'}`}>
+      <div className="flex items-center gap-2">
+        <GripVertical size={14} className="cursor-move text-[#f4f4f0]/40 hover:text-white shrink-0" />
+        <span className="uppercase tracking-widest">{category}</span>
+      </div>
+      <button onClick={() => onDelete(category)} type="button" className="text-red-400 hover:text-red-300 ml-2">
+        <X size={12} />
+      </button>
+    </div>
+  );
+}
+
 interface AdminDashboardProps {
   onClose: () => void;
   initialProjects: Project[];
@@ -191,6 +239,58 @@ interface AdminDashboardProps {
   initialTeam: TeamMember[];
   initialLocations: MapLocation[];
 }
+
+const compressImage = (file: File, maxWidth = 1440): Promise<File> => {
+  return new Promise((resolve) => {
+    if (!file.type.startsWith('image/')) {
+      resolve(file);
+      return;
+    }
+
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+
+      if (width > maxWidth) {
+        height = Math.round((height * maxWidth) / width);
+        width = maxWidth;
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        resolve(file);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
+            type: 'image/webp',
+            lastModified: Date.now(),
+          });
+          resolve(compressedFile);
+        } else {
+          resolve(file);
+        }
+      }, 'image/webp', 0.8);
+    };
+    
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(file);
+    };
+    
+    img.src = url;
+  });
+};
 
 export function AdminDashboard({ onClose, initialProjects, initialPageData, initialTeam, initialLocations }: AdminDashboardProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -220,7 +320,8 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isNewCategory, setIsNewCategory] = useState(false);
 
-  const existingCategories = Array.from(new Set(projects.map(p => p.desc))).filter(Boolean);
+  const projectCategories = Array.from(new Set(projects.flatMap(p => typeof p.desc === 'string' ? p.desc.split(',').map(c => c.trim()) : []))).filter(Boolean) as string[];
+  const existingCategories = Array.from(new Set([...(pageData?.customCategories || []), ...projectCategories]));
 
   useEffect(() => {
     if (!hasUnsavedChanges) {
@@ -247,10 +348,11 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
   }, []);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, index?: number | 'video' | 'team' | 'clientLogo') => {
-    const file = e.target.files?.[0];
+    let file = e.target.files?.[0];
     if (!file) return;
     try {
       setUploading(true);
+      file = await compressImage(file);
       const prefix = index === 'team' ? 'team' : index === 'clientLogo' ? 'logos' : 'projects';
       const storageRef = ref(storage, `${prefix}/${Date.now()}_${file.name}`);
       const snapshot = await uploadBytes(storageRef, file);
@@ -414,6 +516,17 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
     });
     setHasUnsavedChanges(true);
   }, []);
+
+  const moveCategory = useCallback((dragIndex: number, hoverIndex: number) => {
+    setPageData((prevPageData) => {
+      const currentCats = [...existingCategories];
+      const draggedCat = currentCats[dragIndex];
+      currentCats.splice(dragIndex, 1);
+      currentCats.splice(hoverIndex, 0, draggedCat);
+      return { ...prevPageData, customCategories: currentCats };
+    });
+    setHasUnsavedChanges(true);
+  }, [existingCategories]);
 
   const handleSaveChanges = async () => {
     setIsSavingChanges(true);
@@ -722,46 +835,37 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60">Typology (Category)</label>
-                        {!isNewCategory ? (
-                          <select
-                            value={editingProject.desc || ''}
-                            onChange={(e) => {
-                              if (e.target.value === 'ADD_NEW') {
-                                setIsNewCategory(true);
-                                setEditingProject({...editingProject, desc: ''});
-                              } else {
-                                setEditingProject({...editingProject, desc: e.target.value});
-                              }
-                            }}
-                            className="w-full bg-[#111] border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0] text-[#f4f4f0]"
-                          >
-                            <option value="" disabled>Select a Category...</option>
-                            {existingCategories.map((cat, i) => (
-                              <option key={i} value={cat as string}>{cat as string}</option>
-                            ))}
-                            <option value="ADD_NEW">+ Add New Category...</option>
-                          </select>
-                        ) : (
-                          <div className="flex gap-2">
-                            <input 
-                              type="text" 
-                              required
-                              value={editingProject.desc}
-                              onChange={e => setEditingProject({...editingProject, desc: e.target.value})}
-                              className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0]"
-                              placeholder="Type new category..."
-                              autoFocus
-                            />
-                            <button 
-                              type="button"
-                              onClick={() => setIsNewCategory(false)}
-                              className="px-3 py-2 border border-[#f4f4f0]/30 text-xs hover:bg-[#f4f4f0]/10"
-                            >
-                              CANCEL
-                            </button>
-                          </div>
-                        )}
+                        <label className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60">Typologies (Comma separated)</label>
+                        <input 
+                          type="text" 
+                          required
+                          value={editingProject.desc || ''}
+                          onChange={e => setEditingProject({...editingProject, desc: e.target.value})}
+                          className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0]"
+                          placeholder="e.g. COMMERCIAL, TOWER"
+                        />
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {existingCategories.map((cat: string) => {
+                            const currentCats = editingProject.desc ? editingProject.desc.split(',').map(c => c.trim()).filter(Boolean) : [];
+                            const isSelected = currentCats.includes(cat);
+                            return (
+                              <button
+                                type="button"
+                                key={cat}
+                                onClick={() => {
+                                  if (isSelected) {
+                                    setEditingProject({...editingProject, desc: currentCats.filter(c => c !== cat).join(', ')});
+                                  } else {
+                                    setEditingProject({...editingProject, desc: [...currentCats, cat].join(', ')});
+                                  }
+                                }}
+                                className={`px-2 py-1 text-[10px] border transition-colors ${isSelected ? 'bg-[#f4f4f0] text-black border-[#f4f4f0]' : 'border-[#f4f4f0]/30 text-[#f4f4f0]/60 hover:border-[#f4f4f0]'}`}
+                              >
+                                {cat}
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
                       <div className="space-y-2">
                         <label className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60">Year</label>
@@ -852,6 +956,15 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
                             className="bg-transparent border-[#f4f4f0]/30"
                           />
                           <span className="text-xs uppercase tracking-widest">Show in 3D Carousel</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer text-[#f4f4f0]/60 hover:text-white transition-colors">
+                          <input 
+                            type="checkbox" 
+                            checked={editingProject.carouselOnly || false}
+                            onChange={e => setEditingProject({...editingProject, carouselOnly: e.target.checked})}
+                            className="bg-transparent border-[#f4f4f0]/30"
+                          />
+                          <span className="text-[10px] uppercase tracking-widest">Hide from Selected Works (Carousel Only)</span>
                         </label>
                       </div>
                     </div>
@@ -1372,6 +1485,63 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
                         className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0]"
                       />
                     </div>
+                  </div>
+                </div>
+
+                <div className="p-6 border border-[#f4f4f0]/20 bg-[#111] space-y-4">
+                  <h3 className="text-sm uppercase tracking-widest border-b border-[#f4f4f0]/20 pb-3 mb-4">Category Management & Order</h3>
+                  <p className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60 mb-4">Drag to reorder categories. The order here determines the display order on the homepage. Deleting a category here will not remove it from existing projects.</p>
+                  
+                  <div className="flex flex-col gap-1 mb-4">
+                    {existingCategories.map((cat, index) => (
+                      <DraggableCategoryRow 
+                        key={cat} 
+                        category={cat} 
+                        index={index} 
+                        moveCategory={moveCategory} 
+                        onDelete={(category) => {
+                          const newCats = existingCategories.filter(c => c !== category);
+                          setPageData({...pageData, customCategories: newCats});
+                          setHasUnsavedChanges(true);
+                        }} 
+                      />
+                    ))}
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      id="newCustomCategory"
+                      className="flex-1 bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0]"
+                      placeholder="e.g. EXHIBITION"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const input = e.currentTarget;
+                          const val = input.value.trim().toUpperCase();
+                          if (val && !existingCategories.includes(val)) {
+                            setPageData({...pageData, customCategories: [...existingCategories, val]});
+                            setHasUnsavedChanges(true);
+                            input.value = '';
+                          }
+                        }
+                      }}
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        const input = document.getElementById('newCustomCategory') as HTMLInputElement;
+                        const val = input.value.trim().toUpperCase();
+                        if (val && !existingCategories.includes(val)) {
+                          setPageData({...pageData, customCategories: [...existingCategories, val]});
+                          setHasUnsavedChanges(true);
+                          input.value = '';
+                        }
+                      }}
+                      className="px-4 py-2 border border-[#f4f4f0]/30 text-xs hover:bg-[#f4f4f0]/10 transition-colors uppercase"
+                    >
+                      Add
+                    </button>
                   </div>
                 </div>
 

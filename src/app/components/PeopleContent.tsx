@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef, useMemo, useState } from 'react';
 import { TeamMember } from '../../hooks/useFirebaseData';
 
 interface PeopleContentProps {
@@ -18,11 +18,15 @@ export function PeopleContent({ team }: PeopleContentProps) {
   const isDragging = useRef(false);
   const startX = useRef(0);
 
+  // Active person state
+  const [activeIndex, setActiveIndex] = useState(0);
+  const activeIndexRef = useRef(0);
+
   // Responsive variables (matching CarouselUI)
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const cardWidth = isMobile ? 60 : 100;
-  const cardHeight = isMobile ? 180 : 280;
-  const gap = isMobile ? 4 : 8;
+  const cardHeight = isMobile ? 120 : 180;
+  const gap = isMobile ? 6 : 10;
 
   // Duplicate items to form a dense circle
   const displayTeam = useMemo(() => {
@@ -57,12 +61,22 @@ export function PeopleContent({ team }: PeopleContentProps) {
         wrapperRef.current.style.transform = `rotateY(${currentRotation.current}deg)`;
       }
 
+      let closestDist = Infinity;
+      let newActiveIndex = activeIndexRef.current;
+
       cardsRef.current.forEach((card, i) => {
         if (!card) return;
         const itemAngle = i * (360 / totalItems);
         
         const rad = (itemAngle + currentRotation.current) * (Math.PI / 180);
         const z = Math.cos(rad); // 1 = front center, -1 = back center
+        
+        // Find center item
+        const dist = Math.abs(1 - z);
+        if (dist < closestDist) {
+          closestDist = dist;
+          newActiveIndex = i;
+        }
         
         let opacity = 1.0;
         let pointerEvents = 'auto';
@@ -91,6 +105,11 @@ export function PeopleContent({ team }: PeopleContentProps) {
           }
         }
       });
+
+      if (newActiveIndex !== activeIndexRef.current) {
+        activeIndexRef.current = newActiveIndex;
+        setActiveIndex(newActiveIndex);
+      }
 
       animationFrameId = requestAnimationFrame(animate);
     };
@@ -128,18 +147,37 @@ export function PeopleContent({ team }: PeopleContentProps) {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-[#111] animate-[fadeIn_0.5s_ease-out] min-h-[500px]">
+    <div className="flex-1 flex flex-col bg-[#111] animate-[fadeIn_0.5s_ease-out] h-full overflow-hidden">
       {/* Header */}
-      <section className="px-4 sm:px-6 py-4 flex flex-col justify-center items-start relative overflow-hidden shrink-0 z-10 border-b border-white/10">
+      <section className="px-4 sm:px-6 py-4 flex flex-col justify-center items-start relative overflow-hidden shrink-0 z-20 border-b border-white/10">
         <h2 className="font-mono text-[10px] sm:text-xs uppercase tracking-widest text-[#f4f4f0]">
           PEOPLE /// OUR CREW
         </h2>
       </section>
 
-      {/* Embedded 3D Carousel */}
+      {/* Active Person Info / History Area */}
+      <div className="w-full py-8 md:py-12 px-6 sm:px-12 flex flex-col items-center justify-center text-[#f4f4f0] z-20 relative bg-[#111] shrink-0">
+        {displayTeam[activeIndex] && (
+          <div key={displayTeam[activeIndex].id + activeIndex} className="animate-[fadeIn_0.3s_ease-out] max-w-4xl text-center flex flex-col items-center">
+            <h1 className="text-3xl md:text-5xl font-black tracking-tight mb-3">
+              {displayTeam[activeIndex].name}
+            </h1>
+            <p className="text-sm md:text-base font-mono text-[#f4f4f0]/60 uppercase tracking-widest mb-6">
+              {displayTeam[activeIndex].role}
+            </p>
+            <div className="w-12 h-[1px] bg-white/20 mb-6"></div>
+            <p className="text-sm md:text-base text-[#f4f4f0]/80 leading-relaxed font-light whitespace-pre-wrap max-w-2xl mx-auto">
+              {/* @ts-ignore - 'history' property might not exist in TeamMember type, using fallback text if not present */}
+              {displayTeam[activeIndex].history || 'HMS 건축사사무소의 철학과 비전을 공유하며, 공간의 본질과 재료의 물성을 탐구하는 건축가입니다.\n다양한 스케일의 프로젝트를 통해 사용자 경험 중심의 혁신적인 공간을 창출하고 있습니다.'}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Embedded 3D Carousel (Moved to Bottom) */}
       <div 
         ref={containerRef}
-        className="relative flex-1 w-full overflow-hidden select-none touch-none cursor-grab active:cursor-grabbing"
+        className="relative flex-1 w-full select-none touch-none cursor-grab active:cursor-grabbing bg-[#111]"
         onWheel={handleWheel}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -148,10 +186,10 @@ export function PeopleContent({ team }: PeopleContentProps) {
         style={{ perspective: '1800px' }}
       >
         <div 
-          className="absolute top-1/2 left-1/2 w-0 h-0 flex items-center justify-center" 
+          className="absolute top-[25%] left-1/2 w-0 h-0 flex items-center justify-center" 
           style={{ 
             transformStyle: 'preserve-3d',
-            transform: 'rotateX(-8deg) translateY(-60px)' 
+            transform: 'rotateX(-12deg)' 
           }}
         >
           <div ref={wrapperRef} className="absolute inset-0" style={{ transformStyle: 'preserve-3d' }}>

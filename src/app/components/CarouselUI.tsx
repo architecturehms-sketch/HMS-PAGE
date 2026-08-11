@@ -250,13 +250,13 @@ export function CarouselUI({ isActive, onSelect, projects }: CarouselUIProps) {
                     className="w-full h-full object-cover pointer-events-none"
                   />
                 )}
-                
-                {/* Title overlay */}
-                <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                  <h3 className="text-[#f4f4f0] text-xs font-bold tracking-tight drop-shadow-md break-words">
-                    {item.desc}
-                  </h3>
-                </div>
+              </div>
+              
+              {/* Title overlay outside card-inner to allow horizontal overflow */}
+              <div className="absolute inset-x-0 bottom-0 p-2 md:p-4 bg-gradient-to-t from-black/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none flex justify-center rounded-b-[2px]">
+                <h3 className="text-[#f4f4f0] text-[9px] md:text-xs font-bold tracking-tight drop-shadow-md whitespace-nowrap break-keep">
+                  {item.desc}
+                </h3>
               </div>
             </div>
           ))}

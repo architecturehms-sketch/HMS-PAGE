@@ -24,6 +24,7 @@ export interface Project {
   detailImages?: string[];
   content?: string;
   showInCarousel?: boolean;
+  carouselOnly?: boolean;
   videoUrl?: string;
   location?: string;
   status?: string;
@@ -38,6 +39,7 @@ export interface PageData {
   contactEmail: string;
   address: string;
   clientLogos?: string[];
+  customCategories?: string[];
 }
 
 const defaultPageData: PageData = {
@@ -45,6 +47,7 @@ const defaultPageData: PageData = {
   contactEmail: "hmsarch.com",
   address: "Seoul, KR",
   clientLogos: [],
+  customCategories: [],
 };
 
 export interface MapLocation {

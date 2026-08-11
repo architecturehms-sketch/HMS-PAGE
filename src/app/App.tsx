@@ -68,8 +68,10 @@ export default function App() {
   };
 
   const startTransition = (item: any) => {
-    if (item.isLogo) {
+    if (item.isLogo || item.title === 'MAIN' || item.desc === 'MAIN' || item.title === 'ABOUT US') {
       navigateTo({ appState: 'transitioning', selectedProject: null });
+    } else if (item.isCategory) {
+      navigateTo({ appState: 'category', selectedCategory: item.title });
     } else {
       navigateTo({ appState: 'project', selectedProject: item });
     }
@@ -93,6 +95,33 @@ export default function App() {
     window.history.back();
   };
 
+  const projectCategories = Array.from(new Set(projects.flatMap(p => typeof p.desc === 'string' ? p.desc.split(',').map(c => c.trim()) : []))).filter(Boolean) as string[];
+  const existingCategories = Array.from(new Set([...(pageData?.customCategories || []), ...projectCategories]));
+
+  const carouselItems = [
+    {
+      id: `cat-MAIN`,
+      isLogo: true,
+      title: 'MAIN',
+      desc: 'MAIN',
+      img: "",
+      year: "",
+      showInCarousel: true,
+    },
+    ...existingCategories.filter(cat => cat !== 'ABOUT US').map(cat => {
+      const firstProject = projects.find(p => p.desc && p.desc.split(',').map(c => c.trim()).includes(cat) && !p.isLogo && p.img);
+      return {
+        id: `cat-${cat}`,
+        isCategory: true,
+        title: cat,
+        desc: cat,
+        img: firstProject?.img || "",
+        year: "",
+        showInCarousel: true,
+      };
+    })
+  ];
+
   return (
     <div className="w-full min-h-screen overflow-x-hidden selection:bg-black selection:text-white">
       <CustomCursor />
@@ -103,7 +132,7 @@ export default function App() {
       <IntroUI onEnter={startCarousel} isHidden={appState !== 'intro'} />
 
       {/* 3D Carousel Selection */}
-      <CarouselUI isActive={appState === 'carousel'} onSelect={startTransition} projects={projects.filter(p => p.showInCarousel !== false)} />
+      <CarouselUI isActive={appState === 'carousel'} onSelect={startTransition} projects={carouselItems} />
 
       {/* Main Landing Page Content */}
       <MainContent isVisible={appState === 'main' || appState === 'transitioning'} onOpenAdmin={() => setAppState('admin')} onGoToCarousel={() => setAppState('carousel')} onSelectCategory={handleSelectCategory} projects={projects} pageData={pageData} team={team} locations={locations} />

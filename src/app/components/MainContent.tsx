@@ -43,16 +43,18 @@ export function MainContent({ isVisible, onOpenAdmin, onGoToCarousel, onSelectCa
 
   // Extract unique typologies (Categories)
   const categories = useMemo(() => {
-    const unique = Array.from(new Set(projects.filter(p => !p.isLogo).map(item => item.desc)));
+    const allCategories = projects.filter(p => !p.isLogo && !p.carouselOnly).flatMap(p => p.desc ? p.desc.split(',').map(c => c.trim()) : []);
+    const unique = Array.from(new Set([...(pageData?.customCategories || []), ...allCategories])).filter(Boolean);
     return unique.map(desc => {
-      const firstProject = projects.find(p => p.desc === desc && !p.isLogo);
+      const isProjectInCategory = (p: Project) => !!(p.desc && p.desc.split(',').map(c => c.trim()).includes(desc) && !p.isLogo && !p.carouselOnly);
+      const firstProject = projects.find(isProjectInCategory);
       return {
         name: desc,
         img: firstProject?.img || '',
-        count: projects.filter(p => p.desc === desc && !p.isLogo).length
+        count: projects.filter(isProjectInCategory).length
       };
     });
-  }, [projects]);
+  }, [projects, pageData?.customCategories]);
 
 
 

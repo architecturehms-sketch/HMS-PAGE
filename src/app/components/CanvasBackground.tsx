@@ -69,9 +69,9 @@ export function CanvasBackground({ appState, onTransitionComplete }: CanvasBackg
         transitionProgress = 1;
       }
 
-      let bgR = Math.round(lerp(10, 244, transitionProgress));
-      let bgG = Math.round(lerp(10, 244, transitionProgress));
-      let bgB = Math.round(lerp(12, 240, transitionProgress));
+      let bgR = Math.round(lerp(0, 244, transitionProgress));
+      let bgG = Math.round(lerp(0, 244, transitionProgress));
+      let bgB = Math.round(lerp(0, 240, transitionProgress));
       const newBg = `rgb(${bgR}, ${bgG}, ${bgB})`;
       if (document.body.style.backgroundColor !== newBg) {
         document.body.style.backgroundColor = newBg;

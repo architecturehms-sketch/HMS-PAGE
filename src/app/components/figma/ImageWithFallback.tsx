@@ -1,13 +1,17 @@
 import React, { useState } from 'react'
 
-export function ImageWithFallback(props: React.ImgHTMLAttributes<HTMLImageElement>) {
+interface ImageWithFallbackProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+  priority?: boolean;
+}
+
+export function ImageWithFallback(props: ImageWithFallbackProps) {
   const [didError, setDidError] = useState(false)
 
   const handleError = () => {
     setDidError(true)
   }
 
-  const { src, alt, style, className, ...rest } = props
+  const { src, alt, style, className, priority, ...rest } = props
 
   if (!src || didError) {
     return (
@@ -24,6 +28,6 @@ export function ImageWithFallback(props: React.ImgHTMLAttributes<HTMLImageElemen
   }
 
   return (
-    <img src={src} alt={alt} className={className} style={style} loading="lazy" decoding="async" {...rest} onError={handleError} />
+    <img src={src} alt={alt} className={className} style={style} loading={priority ? "eager" : "lazy"} decoding={priority ? "auto" : "async"} {...rest} onError={handleError} />
   )
 }

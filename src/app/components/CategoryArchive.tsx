@@ -61,33 +61,39 @@ export function CategoryArchive({ category, projects, pageData, onClose, onSelec
         </h1>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
-            {filteredProjects.map((item, idx) => (
-              <div 
-                key={item.uniqueId || item.id} 
-                onClick={() => onSelectProject(item)}
-                className={`group cursor-pointer flex flex-col animate-[fadeIn_0.5s_ease-out] hover:-translate-y-2 transition-transform duration-500 ${idx % 2 !== 0 ? 'md:mt-12' : 'mt-0'}`}
-              >
-                <div className="overflow-hidden mb-4 bg-gray-200 w-full relative" style={{ aspectRatio: idx % 3 === 0 ? '3/4' : idx % 3 === 1 ? '1/1' : '4/5' }}>
-                  {item.videoUrl && (
-                    <div className="absolute top-2 right-2 md:top-4 md:right-4 bg-black/30 backdrop-blur-md rounded-full p-2 z-10 text-white/90 group-hover:bg-black/50 transition-colors">
-                      <Play size={12} fill="currentColor" />
-                    </div>
-                  )}
-                  <ImageWithFallback 
-                    src={item.img} 
-                    alt={item.title} 
-                    className="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-110"
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <div className="font-mono text-[10px] sm:text-xs uppercase tracking-widest flex justify-between items-start mb-2">
-                    <span className="font-bold">0{idx + 1}</span>
-                    <span className="text-[#1a1a1a]/60">{item.year}</span>
+            {filteredProjects.map((item, idx) => {
+              const hasProjectDetails = !!(item.videoUrl?.trim() || (item.detailImages && item.detailImages.some((img: string) => img.trim() !== '')));
+              
+              return (
+                <div 
+                  key={item.uniqueId || item.id} 
+                  onClick={() => {
+                    if (hasProjectDetails) onSelectProject(item);
+                  }}
+                  className={`group flex flex-col animate-[fadeIn_0.5s_ease-out] transition-transform duration-500 ${hasProjectDetails ? 'cursor-pointer hover:-translate-y-2' : ''} ${idx % 2 !== 0 ? 'md:mt-12' : 'mt-0'}`}
+                >
+                  <div className="overflow-hidden mb-4 bg-gray-200 w-full relative" style={{ aspectRatio: idx % 3 === 0 ? '3/4' : idx % 3 === 1 ? '1/1' : '4/5' }}>
+                    {item.videoUrl && (
+                      <div className="absolute top-2 right-2 md:top-4 md:right-4 bg-black/30 backdrop-blur-md rounded-full p-2 z-10 text-white/90 group-hover:bg-black/50 transition-colors">
+                        <Play size={12} fill="currentColor" />
+                      </div>
+                    )}
+                    <ImageWithFallback 
+                      src={item.img} 
+                      alt={item.title} 
+                      className={`w-full h-full object-cover transition-all duration-700 ease-out ${hasProjectDetails ? 'group-hover:scale-110' : ''}`}
+                    />
                   </div>
-                  <div className="font-sans text-sm font-medium tracking-normal text-[#1a1a1a] leading-snug break-keep">{item.title}</div>
+                  <div className="flex flex-col">
+                    <div className="font-mono text-[10px] sm:text-xs uppercase tracking-widest flex justify-between items-start mb-2">
+                      <span className="font-bold">0{idx + 1}</span>
+                      <span className="text-[#1a1a1a]/60">{item.year}</span>
+                    </div>
+                    <div className="font-sans text-sm font-medium tracking-normal text-[#1a1a1a] leading-snug break-keep">{item.title}</div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
         </div>
       </div>
     </motion.div>

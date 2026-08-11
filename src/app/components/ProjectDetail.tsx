@@ -120,15 +120,18 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
           <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors duration-700 pointer-events-none" />
         </motion.div>
         
+        {/* Protective gradient for text legibility */}
+        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
+        
         <motion.div 
           style={{ opacity: opacityHero }}
-          className="absolute inset-0 flex flex-col justify-end p-6 md:p-12 pb-6 md:pb-24"
+          className="absolute inset-0 flex flex-col justify-end p-6 md:p-12 pb-4 md:pb-12 pointer-events-none"
         >
           <motion.h1 
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="md:-ml-4 text-[7vw] md:text-[5vw] font-medium leading-[0.85] tracking-tighter text-[#f4f4f0] mix-blend-difference"
+            className="md:-ml-4 text-[7vw] md:text-[5vw] font-medium leading-[0.85] tracking-tighter text-[#f4f4f0] drop-shadow-xl"
           >
             {project.title}
           </motion.h1>
@@ -137,7 +140,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.6, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-y-3 md:gap-y-5 gap-x-12 mt-8 text-[#f4f4f0] font-mono text-xs md:text-sm font-light tracking-widest uppercase mix-blend-difference"
+            className="grid grid-cols-2 md:grid-cols-4 gap-y-3 md:gap-y-5 gap-x-12 mt-12 md:mt-16 text-[#f4f4f0] font-mono text-xs md:text-sm font-light tracking-widest uppercase drop-shadow-md"
           >
             <div>
               <span className="opacity-50 block mb-1 text-[10px]">TYPOLOGY</span>
@@ -306,24 +309,15 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
   );
 }
 
-// Reusable Parallax Image Component
+// Reusable Detail Image Component (Replaces Parallax)
 function ParallaxImage({ src, alt, speed = 0.1, onClick }: { src: string, alt: string, speed?: number, onClick?: () => void }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"]
-  });
-
-  const y = useTransform(scrollYProgress, [0, 1], ["-10%", "10%"]);
-
   return (
-    <div ref={ref} className="relative w-full h-[60vh] md:h-[80vh] overflow-hidden bg-[#111]" onClick={onClick}>
-      <motion.img 
-        style={{ y }}
+    <div className="relative w-full aspect-video overflow-hidden bg-[#111] flex items-center justify-center cursor-pointer" onClick={onClick}>
+      <img 
         src={src} 
         alt={alt}
         draggable={false}
-        className="absolute inset-0 w-full h-[120%] -top-[10%] object-cover transition-all duration-700 opacity-80 hover:opacity-100"
+        className="w-full h-full object-contain transition-all duration-700 opacity-90 hover:opacity-100"
       />
     </div>
   );

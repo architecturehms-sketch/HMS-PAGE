@@ -1066,10 +1066,10 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
 
                     {!editingProject.isLogo && (
                       <div className="space-y-4 pt-4 border-t border-[#f4f4f0]/20">
-                        <h3 className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60">Detail Page Images (Up to 8)</h3>
+                        <h3 className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60">Detail Page Images (Up to 20)</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {[0, 1, 2, 3, 4, 5, 6, 7].map(index => {
-                            const detailImgs = editingProject.detailImages || ['', '', '', '', '', '', '', ''];
+                          {Array.from({ length: 20 }).map((_, index) => {
+                            const detailImgs = editingProject.detailImages || Array(20).fill('');
                             const url = detailImgs[index];
                             return (
                               <div key={index} className="flex gap-4 items-start border border-[#f4f4f0]/10 p-4">

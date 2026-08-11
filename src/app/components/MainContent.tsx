@@ -46,15 +46,26 @@ export function MainContent({ isVisible, onOpenAdmin, onGoToCarousel, onSelectCa
     const allCategories = projects.filter(p => !p.isLogo && !p.carouselOnly).flatMap(p => p.desc ? p.desc.split(',').map(c => c.trim()) : []);
     const unique = Array.from(new Set([...(pageData?.customCategories || []), ...allCategories])).filter(Boolean);
     return unique.map(desc => {
-      const isProjectInCategory = (p: Project) => !!(p.desc && p.desc.split(',').map(c => c.trim()).includes(desc) && !p.isLogo && !p.carouselOnly);
-      const firstProject = projects.find(isProjectInCategory);
+      const isProjectInCategory = (p: Project) => !!(p.desc && p.desc.split(',').map(c => c.trim()).includes(desc) && !p.isLogo && !p.carouselOnly && p.img);
+      const orderList = pageData?.categoryProjectOrders?.[desc] || [];
+      const catProjects = projects.filter(isProjectInCategory)
+        .sort((a, b) => {
+          const indexA = orderList.indexOf(a.id as string);
+          const indexB = orderList.indexOf(b.id as string);
+          if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+          if (indexA !== -1) return -1;
+          if (indexB !== -1) return 1;
+          return 0;
+        });
+      
+      const firstProject = catProjects[0];
       return {
         name: desc,
         img: firstProject?.img || '',
-        count: projects.filter(isProjectInCategory).length
+        count: projects.filter((p: Project) => !!(p.desc && p.desc.split(',').map(c => c.trim()).includes(desc) && !p.isLogo && !p.carouselOnly)).length
       };
     });
-  }, [projects, pageData?.customCategories]);
+  }, [projects, pageData?.customCategories, pageData?.categoryProjectOrders]);
 
 
 

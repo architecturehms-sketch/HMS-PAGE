@@ -261,120 +261,109 @@ export function PeopleContent({ team }: PeopleContentProps) {
         </div>
       </div>
 
-      {/* Modal Popup */}
+      {/* Overlay Details (Game Character Style) */}
       <AnimatePresence>
         {selectedMember && (
-          <motion.div
+          <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSelectedMember(null)}
-            className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-8 cursor-pointer"
+            className="absolute inset-0 z-40 bg-[#111]/80 backdrop-blur-[6px] cursor-pointer flex flex-col md:flex-row justify-between p-8 md:p-16 overflow-y-auto overflow-x-hidden pointer-events-auto"
           >
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 20, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-white text-[#1a1a1a] w-full max-w-4xl max-h-[90vh] overflow-y-auto cursor-default relative p-8 sm:p-12 shadow-2xl rounded-sm"
+            {/* Left Panel (Education / Career / Record) */}
+            <motion.div 
+              initial={{ x: -30, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -30, opacity: 0 }}
+              transition={{ delay: 0.1, duration: 0.4, ease: 'easeOut' }}
+              className="w-full md:w-[40%] flex flex-col justify-center space-y-8 md:space-y-12 text-[#f4f4f0] pointer-events-none order-2 md:order-1 mt-12 md:mt-0 pb-12 md:pb-0"
             >
-              <button 
-                onClick={() => setSelectedMember(null)}
-                className="absolute top-4 right-4 sm:top-6 sm:right-6 text-[#1a1a1a]/40 hover:text-[#1a1a1a] transition-colors"
-              >
-                <X size={24} />
-              </button>
-
-              <div className="flex flex-col md:flex-row gap-8 md:gap-16">
-                {/* Left content area */}
-                <div className="flex-1 space-y-10 order-2 md:order-1">
-                  
-                  {/* Header Area */}
-                  <div className="border-b border-[#E3342F] pb-4">
-                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                      <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{selectedMember.name}</h2>
-                      <span className="text-sm sm:text-base font-semibold text-[#1a1a1a]/80">{selectedMember.role}</span>
-                      <span className="text-xl sm:text-2xl text-[#1a1a1a]/20 mx-1 hidden sm:inline">|</span>
-                      <h2 className="text-xl sm:text-2xl font-bold text-[#1a1a1a]/80 tracking-tight">{selectedMember.nameEn || ''}</h2>
-                      <span className="text-sm sm:text-base font-semibold text-[#1a1a1a]/60">{selectedMember.roleEn || ''}</span>
+              {/* Education */}
+              {(selectedMember.educationKr || selectedMember.educationEn) && (
+                <div className="flex flex-col space-y-4">
+                  <div className="flex items-center gap-4 opacity-50">
+                    <span className="h-[1px] flex-1 bg-white/30"></span>
+                    <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold">Education</h4>
+                    <span className="h-[1px] flex-1 bg-white/30 md:hidden"></span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 mt-4">
+                    <div className="flex-1 text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed text-center md:text-left">
+                      {selectedMember.educationKr}
                     </div>
-                    {selectedMember.specializations && (
-                      <div className="mt-2 text-sm font-semibold text-[#1a1a1a]/70">
-                        {selectedMember.specializations}
-                      </div>
-                    )}
+                    <div className="flex-1 text-xs md:text-sm text-[#f4f4f0]/60 whitespace-pre-wrap leading-relaxed text-center md:text-left font-light">
+                      {selectedMember.educationEn}
+                    </div>
                   </div>
+                </div>
+              )}
 
-                  {/* 2-column Details */}
-                  <div className="space-y-8">
-                    {/* Education */}
-                    {(selectedMember.educationKr || selectedMember.educationEn) && (
-                      <div className="flex flex-col sm:flex-row gap-4 sm:gap-12">
-                        <div className="flex-1">
-                          <h4 className="font-bold text-sm mb-2">학력</h4>
-                          <div className="text-xs sm:text-sm text-[#1a1a1a] whitespace-pre-wrap leading-relaxed">
-                            {selectedMember.educationKr}
-                          </div>
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-bold text-sm mb-2 uppercase tracking-widest">Education</h4>
-                          <div className="text-xs sm:text-sm text-[#1a1a1a] whitespace-pre-wrap leading-relaxed">
-                            {selectedMember.educationEn}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Career */}
-                    {(selectedMember.careerKr || selectedMember.careerEn) && (
-                      <div className="flex flex-col sm:flex-row gap-4 sm:gap-12">
-                        <div className="flex-1">
-                          <h4 className="font-bold text-sm mb-2">경력</h4>
-                          <div className="text-xs sm:text-sm text-[#1a1a1a] whitespace-pre-wrap leading-relaxed">
-                            {selectedMember.careerKr}
-                          </div>
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-bold text-sm mb-2 uppercase tracking-widest">Career</h4>
-                          <div className="text-xs sm:text-sm text-[#1a1a1a] whitespace-pre-wrap leading-relaxed">
-                            {selectedMember.careerEn}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Record */}
-                    {(selectedMember.recordKr || selectedMember.recordEn) && (
-                      <div className="flex flex-col sm:flex-row gap-4 sm:gap-12">
-                        <div className="flex-1">
-                          <h4 className="font-bold text-sm mb-2">이력</h4>
-                          <div className="text-xs sm:text-sm text-[#1a1a1a] whitespace-pre-wrap leading-relaxed">
-                            {selectedMember.recordKr}
-                          </div>
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-bold text-sm mb-2 uppercase tracking-widest">Record</h4>
-                          <div className="text-xs sm:text-sm text-[#1a1a1a] whitespace-pre-wrap leading-relaxed">
-                            {selectedMember.recordEn}
-                          </div>
-                        </div>
-                      </div>
-                    )}
+              {/* Career */}
+              {(selectedMember.careerKr || selectedMember.careerEn) && (
+                <div className="flex flex-col space-y-4">
+                  <div className="flex items-center gap-4 opacity-50">
+                    <span className="h-[1px] flex-1 bg-white/30"></span>
+                    <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold">Career</h4>
+                    <span className="h-[1px] flex-1 bg-white/30 md:hidden"></span>
                   </div>
-
+                  <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 mt-4">
+                    <div className="flex-1 text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed text-center md:text-left">
+                      {selectedMember.careerKr}
+                    </div>
+                    <div className="flex-1 text-xs md:text-sm text-[#f4f4f0]/60 whitespace-pre-wrap leading-relaxed text-center md:text-left font-light">
+                      {selectedMember.careerEn}
+                    </div>
+                  </div>
                 </div>
+              )}
 
-                {/* Right Image area */}
-                <div className="w-[80%] max-w-[240px] sm:w-1/3 md:w-[30%] shrink-0 order-1 md:order-2 mx-auto md:mx-0">
-                  <img 
-                    src={selectedMember.img} 
-                    alt={selectedMember.name} 
-                    className="w-full h-auto object-contain grayscale"
-                  />
+              {/* Record */}
+              {(selectedMember.recordKr || selectedMember.recordEn) && (
+                <div className="flex flex-col space-y-4">
+                  <div className="flex items-center gap-4 opacity-50">
+                    <span className="h-[1px] flex-1 bg-white/30"></span>
+                    <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold">Record</h4>
+                    <span className="h-[1px] flex-1 bg-white/30 md:hidden"></span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 mt-4">
+                    <div className="flex-1 text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed text-center md:text-left">
+                      {selectedMember.recordKr}
+                    </div>
+                    <div className="flex-1 text-xs md:text-sm text-[#f4f4f0]/60 whitespace-pre-wrap leading-relaxed text-center md:text-left font-light">
+                      {selectedMember.recordEn}
+                    </div>
+                  </div>
                 </div>
-              </div>
-
+              )}
             </motion.div>
+
+            {/* Right Panel (Name / Role) */}
+            <motion.div 
+              initial={{ x: 30, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: 30, opacity: 0 }}
+              transition={{ delay: 0.1, duration: 0.4, ease: 'easeOut' }}
+              className="w-full md:w-[35%] flex flex-col items-center md:items-end text-center md:text-right text-[#f4f4f0] pointer-events-none order-1 md:order-2 mt-4 md:mt-16"
+            >
+              <div className="border-b md:border-b-0 md:border-r border-[#f4f4f0]/30 pb-6 md:pb-0 md:pr-8">
+                <h2 className="text-3xl md:text-5xl font-black tracking-tighter drop-shadow-lg">{selectedMember.name}</h2>
+                <h3 className="text-sm md:text-lg text-[#f4f4f0]/80 mt-2 font-medium tracking-wide">{selectedMember.role}</h3>
+                
+                {(selectedMember.nameEn || selectedMember.roleEn) && (
+                  <div className="mt-6 md:mt-8 pt-6 md:pt-8 border-t border-[#f4f4f0]/10">
+                    <h2 className="text-xl md:text-3xl font-bold tracking-tight text-[#f4f4f0]/60">{selectedMember.nameEn}</h2>
+                    <h3 className="text-xs md:text-sm text-[#f4f4f0]/40 mt-1 uppercase tracking-widest font-mono">{selectedMember.roleEn}</h3>
+                  </div>
+                )}
+
+                {selectedMember.specializations && (
+                  <div className="mt-6 md:mt-12 text-[10px] md:text-xs text-[#E3342F] uppercase tracking-[0.2em] font-mono bg-[#E3342F]/10 py-2 px-4 rounded-full inline-block">
+                    {selectedMember.specializations}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+
           </motion.div>
         )}
       </AnimatePresence>

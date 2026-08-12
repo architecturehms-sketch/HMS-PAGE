@@ -239,7 +239,7 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                   controls
                   loop 
                   playsInline
-                  className="absolute inset-0 w-full h-full object-cover transition-all duration-700 opacity-90 hover:opacity-100"
+                  className="absolute inset-0 w-full h-full object-contain transition-all duration-700 opacity-90 hover:opacity-100"
                 />
               </div>
             </div>
@@ -251,11 +251,10 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
               <div className="w-full h-[50vh] md:h-[90vh] bg-[#111] relative overflow-hidden border border-[#f4f4f0]/10">
                 <video 
                   src={project.videoUrl2} 
-                  autoPlay 
                   controls
                   loop 
                   playsInline
-                  className="absolute inset-0 w-full h-full object-cover transition-all duration-700 opacity-90 hover:opacity-100"
+                  className="absolute inset-0 w-full h-full object-contain transition-all duration-700 opacity-90 hover:opacity-100"
                 />
               </div>
             </div>

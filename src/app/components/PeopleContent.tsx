@@ -153,7 +153,12 @@ export function PeopleContent({ team }: PeopleContentProps) {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-[#111] animate-[fadeIn_0.5s_ease-out] h-full overflow-hidden">
+    <div 
+      className="flex-1 flex flex-col bg-[#111] animate-[fadeIn_0.5s_ease-out] h-full overflow-hidden"
+      onClick={() => {
+         if (selectedMember) setSelectedMember(null);
+      }}
+    >
       {/* Header */}
       <section className="px-4 sm:px-6 py-4 flex flex-col justify-center items-start relative overflow-hidden shrink-0 z-20 border-b border-white/10">
         <h2 className="font-mono text-[10px] sm:text-xs uppercase tracking-widest text-[#f4f4f0]">
@@ -161,29 +166,108 @@ export function PeopleContent({ team }: PeopleContentProps) {
         </h2>
       </section>
 
-      {/* Active Person Info / History Area */}
-      <div className="w-full py-4 md:py-6 px-6 sm:px-12 flex flex-col items-center justify-center text-[#f4f4f0] z-20 relative bg-[#111] shrink-0">
-        {displayTeam[activeIndex] && (
-          <div key={displayTeam[activeIndex].id + activeIndex} className="animate-[fadeIn_0.3s_ease-out] max-w-4xl text-center flex flex-col items-center">
-            <h1 className="text-2xl md:text-4xl font-black tracking-tight mb-2">
-              {displayTeam[activeIndex].name}
-            </h1>
-            <p className="text-xs md:text-sm font-mono text-[#f4f4f0]/60 uppercase tracking-widest mb-4">
-              {displayTeam[activeIndex].role}
-            </p>
-            <div className="w-10 h-[1px] bg-white/20 mb-4"></div>
-            <p className="text-xs md:text-sm text-[#f4f4f0]/80 leading-relaxed font-light whitespace-pre-wrap max-w-2xl mx-auto">
-              {/* @ts-ignore - 'history' property might not exist in TeamMember type, using fallback text if not present */}
-              {displayTeam[activeIndex].history || 'HMS 건축사사무소의 철학과 비전을 공유하며, 공간의 본질과 재료의 물성을 탐구하는 건축가입니다.\n다양한 스케일의 프로젝트를 통해 사용자 경험 중심의 혁신적인 공간을 창출하고 있습니다.'}
-            </p>
-          </div>
-        )}
+      {/* Active Person Info / Detailed Profile Area */}
+      <div 
+        className="w-full py-4 md:py-6 px-6 sm:px-12 flex flex-col items-center justify-center text-[#f4f4f0] z-20 relative bg-[#111] shrink-0 transition-all duration-700 ease-in-out"
+        style={{ minHeight: selectedMember ? '50vh' : 'auto' }}
+      >
+        <AnimatePresence mode="wait">
+          {!selectedMember ? (
+            <motion.div 
+              key="basic-info"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="max-w-4xl text-center flex flex-col items-center"
+            >
+              <h1 className="text-2xl md:text-4xl font-black tracking-tight mb-2">
+                {displayTeam[activeIndex].name}
+              </h1>
+              <p className="text-xs md:text-sm font-mono text-[#f4f4f0]/60 uppercase tracking-widest mb-4">
+                {displayTeam[activeIndex].role}
+              </p>
+              <div className="w-10 h-[1px] bg-white/20 mb-4"></div>
+              <p className="text-xs md:text-sm text-[#f4f4f0]/80 leading-relaxed font-light whitespace-pre-wrap max-w-2xl mx-auto">
+                {/* @ts-ignore */}
+                {displayTeam[activeIndex].history || 'HMS 건축사사무소의 철학과 비전을 공유하며, 공간의 본질과 재료의 물성을 탐구하는 건축가입니다.\n다양한 스케일의 프로젝트를 통해 사용자 경험 중심의 혁신적인 공간을 창출하고 있습니다.'}
+              </p>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="detail-info"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.4 }}
+              className="w-full max-w-6xl flex flex-col md:flex-row gap-8 md:gap-16 items-start justify-center cursor-default pt-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Left Side: Name & Role */}
+              <div className="w-full md:w-1/3 text-center md:text-right border-b md:border-b-0 md:border-r border-white/10 pb-6 md:pb-0 md:pr-8">
+                <h2 className="text-3xl md:text-5xl font-black tracking-tighter drop-shadow-lg">{selectedMember.name}</h2>
+                <h3 className="text-sm md:text-lg text-[#f4f4f0]/80 mt-2 font-medium tracking-wide">{selectedMember.role}</h3>
+                
+                {(selectedMember.nameEn || selectedMember.roleEn) && (
+                  <div className="mt-6 md:mt-8 pt-6 md:pt-8 border-t border-[#f4f4f0]/10">
+                    <h2 className="text-xl md:text-3xl font-bold tracking-tight text-[#f4f4f0]/60">{selectedMember.nameEn}</h2>
+                    <h3 className="text-xs md:text-sm text-[#f4f4f0]/40 mt-1 uppercase tracking-widest font-mono">{selectedMember.roleEn}</h3>
+                  </div>
+                )}
+
+                {selectedMember.specializations && (
+                  <div className="mt-6 md:mt-8 text-[10px] md:text-xs text-[#E3342F] uppercase tracking-[0.2em] font-mono border border-[#E3342F]/30 bg-[#E3342F]/5 py-2 px-4 rounded-full inline-block">
+                    {selectedMember.specializations}
+                  </div>
+                )}
+              </div>
+
+              {/* Right Side: Education, Career, Record */}
+              <div className="w-full md:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                {/* Education */}
+                {(selectedMember.educationKr || selectedMember.educationEn) && (
+                  <div>
+                    <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3">Education</h4>
+                    <div className="space-y-2">
+                      <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.educationKr}</div>
+                      <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light">{selectedMember.educationEn}</div>
+                    </div>
+                  </div>
+                )}
+                {/* Career */}
+                {(selectedMember.careerKr || selectedMember.careerEn) && (
+                  <div>
+                    <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3">Career</h4>
+                    <div className="space-y-2">
+                      <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.careerKr}</div>
+                      <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light">{selectedMember.careerEn}</div>
+                    </div>
+                  </div>
+                )}
+                {/* Record */}
+                {(selectedMember.recordKr || selectedMember.recordEn) && (
+                  <div className="md:col-span-2">
+                    <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3">Record</h4>
+                    <div className="space-y-2 flex flex-col md:flex-row gap-4 md:gap-8">
+                      <div className="flex-1 text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.recordKr}</div>
+                      <div className="flex-1 text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light">{selectedMember.recordEn}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Embedded 3D Carousel (Moved to Bottom) */}
       <div 
         ref={containerRef}
-        className="relative flex-1 w-full select-none touch-none cursor-grab active:cursor-grabbing bg-[#111]"
+        className={`relative flex-1 w-full select-none touch-none cursor-grab active:cursor-grabbing bg-[#111] transition-all duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${
+          selectedMember 
+            ? 'translate-y-[10vh] opacity-30 grayscale blur-[2px] pointer-events-none' 
+            : 'translate-y-0 opacity-100 grayscale-0 blur-0'
+        }`}
         onWheel={handleWheel}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -261,112 +345,7 @@ export function PeopleContent({ team }: PeopleContentProps) {
         </div>
       </div>
 
-      {/* Overlay Details (Game Character Style) */}
-      <AnimatePresence>
-        {selectedMember && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedMember(null)}
-            className="absolute inset-0 z-40 bg-[#111]/80 backdrop-blur-[6px] cursor-pointer flex flex-col md:flex-row justify-between p-8 md:p-16 overflow-y-auto overflow-x-hidden pointer-events-auto"
-          >
-            {/* Left Panel (Education / Career / Record) */}
-            <motion.div 
-              initial={{ x: -30, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -30, opacity: 0 }}
-              transition={{ delay: 0.1, duration: 0.4, ease: 'easeOut' }}
-              className="w-full md:w-[40%] flex flex-col justify-center space-y-8 md:space-y-12 text-[#f4f4f0] pointer-events-none order-2 md:order-1 mt-12 md:mt-0 pb-12 md:pb-0"
-            >
-              {/* Education */}
-              {(selectedMember.educationKr || selectedMember.educationEn) && (
-                <div className="flex flex-col space-y-4">
-                  <div className="flex items-center gap-4 opacity-50">
-                    <span className="h-[1px] flex-1 bg-white/30"></span>
-                    <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold">Education</h4>
-                    <span className="h-[1px] flex-1 bg-white/30 md:hidden"></span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 mt-4">
-                    <div className="flex-1 text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed text-center md:text-left">
-                      {selectedMember.educationKr}
-                    </div>
-                    <div className="flex-1 text-xs md:text-sm text-[#f4f4f0]/60 whitespace-pre-wrap leading-relaxed text-center md:text-left font-light">
-                      {selectedMember.educationEn}
-                    </div>
-                  </div>
-                </div>
-              )}
 
-              {/* Career */}
-              {(selectedMember.careerKr || selectedMember.careerEn) && (
-                <div className="flex flex-col space-y-4">
-                  <div className="flex items-center gap-4 opacity-50">
-                    <span className="h-[1px] flex-1 bg-white/30"></span>
-                    <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold">Career</h4>
-                    <span className="h-[1px] flex-1 bg-white/30 md:hidden"></span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 mt-4">
-                    <div className="flex-1 text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed text-center md:text-left">
-                      {selectedMember.careerKr}
-                    </div>
-                    <div className="flex-1 text-xs md:text-sm text-[#f4f4f0]/60 whitespace-pre-wrap leading-relaxed text-center md:text-left font-light">
-                      {selectedMember.careerEn}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Record */}
-              {(selectedMember.recordKr || selectedMember.recordEn) && (
-                <div className="flex flex-col space-y-4">
-                  <div className="flex items-center gap-4 opacity-50">
-                    <span className="h-[1px] flex-1 bg-white/30"></span>
-                    <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold">Record</h4>
-                    <span className="h-[1px] flex-1 bg-white/30 md:hidden"></span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 mt-4">
-                    <div className="flex-1 text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed text-center md:text-left">
-                      {selectedMember.recordKr}
-                    </div>
-                    <div className="flex-1 text-xs md:text-sm text-[#f4f4f0]/60 whitespace-pre-wrap leading-relaxed text-center md:text-left font-light">
-                      {selectedMember.recordEn}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </motion.div>
-
-            {/* Right Panel (Name / Role) */}
-            <motion.div 
-              initial={{ x: 30, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 30, opacity: 0 }}
-              transition={{ delay: 0.1, duration: 0.4, ease: 'easeOut' }}
-              className="w-full md:w-[35%] flex flex-col items-center md:items-end text-center md:text-right text-[#f4f4f0] pointer-events-none order-1 md:order-2 mt-4 md:mt-16"
-            >
-              <div className="border-b md:border-b-0 md:border-r border-[#f4f4f0]/30 pb-6 md:pb-0 md:pr-8">
-                <h2 className="text-3xl md:text-5xl font-black tracking-tighter drop-shadow-lg">{selectedMember.name}</h2>
-                <h3 className="text-sm md:text-lg text-[#f4f4f0]/80 mt-2 font-medium tracking-wide">{selectedMember.role}</h3>
-                
-                {(selectedMember.nameEn || selectedMember.roleEn) && (
-                  <div className="mt-6 md:mt-8 pt-6 md:pt-8 border-t border-[#f4f4f0]/10">
-                    <h2 className="text-xl md:text-3xl font-bold tracking-tight text-[#f4f4f0]/60">{selectedMember.nameEn}</h2>
-                    <h3 className="text-xs md:text-sm text-[#f4f4f0]/40 mt-1 uppercase tracking-widest font-mono">{selectedMember.roleEn}</h3>
-                  </div>
-                )}
-
-                {selectedMember.specializations && (
-                  <div className="mt-6 md:mt-12 text-[10px] md:text-xs text-[#E3342F] uppercase tracking-[0.2em] font-mono bg-[#E3342F]/10 py-2 px-4 rounded-full inline-block">
-                    {selectedMember.specializations}
-                  </div>
-                )}
-              </div>
-            </motion.div>
-
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

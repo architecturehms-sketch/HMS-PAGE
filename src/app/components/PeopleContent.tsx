@@ -168,93 +168,116 @@ export function PeopleContent({ team }: PeopleContentProps) {
 
       {/* Active Person Info / Detailed Profile Area */}
       <div 
-        className="w-full py-4 md:py-6 px-6 sm:px-12 flex flex-col items-center justify-center text-[#f4f4f0] z-20 relative bg-[#111] shrink-0 transition-all duration-700 ease-in-out"
-        style={{ minHeight: selectedMember ? '50vh' : 'auto' }}
+        className="w-full py-4 md:py-6 px-6 sm:px-12 flex flex-col items-center justify-start text-[#f4f4f0] z-20 relative bg-[#111] shrink-0"
       >
-        <AnimatePresence mode="wait">
-          {!selectedMember ? (
-            <motion.div 
-              key="basic-info"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              className="max-w-4xl text-center flex flex-col items-center"
+        {displayTeam[activeIndex] && (
+          <div className="max-w-5xl w-full flex flex-col items-center">
+            {/* 1. Permanent Name & Role Block */}
+            <div 
+              className="text-center flex flex-col items-center cursor-pointer z-30" 
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedMember(null);
+              }}
             >
-              <h1 className="text-2xl md:text-4xl font-black tracking-tight mb-2">
-                {displayTeam[activeIndex].name}
-              </h1>
-              <p className="text-xs md:text-sm font-mono text-[#f4f4f0]/60 uppercase tracking-widest mb-4">
-                {displayTeam[activeIndex].role}
-              </p>
-
-            </motion.div>
-          ) : (
-            <motion.div
-              key="detail-info"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.4 }}
-              className="w-full max-w-5xl flex flex-col items-center justify-start cursor-default pt-2"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Name & Role (Matches basic view) */}
-              <div className="text-center flex flex-col items-center mb-6">
-                <div className="flex items-baseline justify-center gap-3">
-                  <h1 className="text-2xl md:text-4xl font-black tracking-tight">{selectedMember.name}</h1>
-                  {selectedMember.nameEn && (
-                    <span className="text-sm md:text-lg text-[#f4f4f0]/40 font-bold tracking-wider">{selectedMember.nameEn}</span>
+              <div className="flex items-baseline justify-center gap-3">
+                <h1 className="text-2xl md:text-4xl font-black tracking-tight transition-all duration-500">
+                  {selectedMember ? selectedMember.name : displayTeam[activeIndex].name}
+                </h1>
+                <AnimatePresence>
+                  {selectedMember && selectedMember.nameEn && (
+                    <motion.span 
+                      initial={{ opacity: 0, width: 0 }} 
+                      animate={{ opacity: 1, width: 'auto' }} 
+                      exit={{ opacity: 0, width: 0 }}
+                      className="text-sm md:text-lg text-[#f4f4f0]/40 font-bold tracking-wider whitespace-nowrap overflow-hidden"
+                    >
+                      <span className="pl-3">{selectedMember.nameEn}</span>
+                    </motion.span>
                   )}
-                </div>
-                <div className="flex items-center justify-center gap-2 mt-2">
-                  <p className="text-xs md:text-sm font-mono text-[#f4f4f0]/60 uppercase tracking-widest">{selectedMember.role}</p>
-                  {selectedMember.roleEn && (
-                    <>
-                      <span className="text-[#f4f4f0]/20 text-xs">|</span>
+                </AnimatePresence>
+              </div>
+
+              <div className="flex items-center justify-center gap-2 mt-2 transition-all duration-500">
+                <p className="text-xs md:text-sm font-mono text-[#f4f4f0]/60 uppercase tracking-widest">
+                  {selectedMember ? selectedMember.role : displayTeam[activeIndex].role}
+                </p>
+                <AnimatePresence>
+                  {selectedMember && selectedMember.roleEn && (
+                    <motion.span 
+                      initial={{ opacity: 0, width: 0 }} 
+                      animate={{ opacity: 1, width: 'auto' }} 
+                      exit={{ opacity: 0, width: 0 }}
+                      className="flex items-center gap-2 whitespace-nowrap overflow-hidden"
+                    >
+                      <span className="text-[#f4f4f0]/20 text-xs pl-2">|</span>
                       <p className="text-[10px] md:text-xs font-mono text-[#f4f4f0]/30 uppercase tracking-widest">{selectedMember.roleEn}</p>
-                    </>
+                    </motion.span>
                   )}
-                </div>
-                {selectedMember.specializations && (
-                  <div className="mt-3 text-[10px] text-[#E3342F] uppercase tracking-[0.2em] font-mono bg-[#E3342F]/10 py-1.5 px-3 rounded-full inline-block">
-                    {selectedMember.specializations}
-                  </div>
-                )}
+                </AnimatePresence>
               </div>
+              
+              <AnimatePresence>
+                {selectedMember && selectedMember.specializations && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0, marginTop: 0 }} 
+                    animate={{ opacity: 1, height: 'auto', marginTop: 12 }} 
+                    exit={{ opacity: 0, height: 0, marginTop: 0 }} 
+                    className="overflow-hidden"
+                  >
+                    <div className="text-[10px] text-[#E3342F] uppercase tracking-[0.2em] font-mono bg-[#E3342F]/10 py-1.5 px-3 rounded-full inline-block">
+                      {selectedMember.specializations}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
-              <div className="w-10 h-[1px] bg-white/20 mb-8"></div>
+            {/* 2. Expandable Details Block */}
+            <AnimatePresence initial={false}>
+              {selectedMember && (
+                <motion.div
+                  key="expandable-details"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  className="w-full overflow-hidden flex flex-col items-center origin-top cursor-default"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="w-10 h-[1px] bg-white/20 mt-6 mb-8"></div>
 
-              {/* Education, Career, Record (Grid Layout) */}
-              <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 text-center px-4">
-                {/* Education */}
-                {(selectedMember.educationKr || selectedMember.educationEn) && (
-                  <div className="flex flex-col items-center">
-                    <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3">Education</h4>
-                    <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.educationKr}</div>
-                    <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light mt-1">{selectedMember.educationEn}</div>
+                  <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 text-center px-4 pb-4">
+                    {/* Education */}
+                    {(selectedMember.educationKr || selectedMember.educationEn) && (
+                      <div className="flex flex-col items-center">
+                        <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3">Education</h4>
+                        <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.educationKr}</div>
+                        <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light mt-1">{selectedMember.educationEn}</div>
+                      </div>
+                    )}
+                    {/* Career */}
+                    {(selectedMember.careerKr || selectedMember.careerEn) && (
+                      <div className="flex flex-col items-center">
+                        <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3">Career</h4>
+                        <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.careerKr}</div>
+                        <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light mt-1">{selectedMember.careerEn}</div>
+                      </div>
+                    )}
+                    {/* Record */}
+                    {(selectedMember.recordKr || selectedMember.recordEn) && (
+                      <div className="flex flex-col items-center md:col-span-1">
+                        <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3">Record</h4>
+                        <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.recordKr}</div>
+                        <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light mt-1">{selectedMember.recordEn}</div>
+                      </div>
+                    )}
                   </div>
-                )}
-                {/* Career */}
-                {(selectedMember.careerKr || selectedMember.careerEn) && (
-                  <div className="flex flex-col items-center">
-                    <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3">Career</h4>
-                    <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.careerKr}</div>
-                    <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light mt-1">{selectedMember.careerEn}</div>
-                  </div>
-                )}
-                {/* Record */}
-                {(selectedMember.recordKr || selectedMember.recordEn) && (
-                  <div className="flex flex-col items-center md:col-span-1">
-                    <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3">Record</h4>
-                    <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.recordKr}</div>
-                    <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light mt-1">{selectedMember.recordEn}</div>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
 
       {/* Embedded 3D Carousel (Moved to Bottom) */}
@@ -262,8 +285,8 @@ export function PeopleContent({ team }: PeopleContentProps) {
         ref={containerRef}
         className={`relative flex-1 w-full select-none touch-none cursor-grab active:cursor-grabbing bg-[#111] transition-all duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${
           selectedMember 
-            ? 'translate-y-[10vh] opacity-30 grayscale blur-[2px] pointer-events-none' 
-            : 'translate-y-0 opacity-100 grayscale-0 blur-0'
+            ? 'opacity-20 grayscale blur-[4px] pointer-events-none scale-95' 
+            : 'opacity-100 grayscale-0 blur-0 scale-100'
         }`}
         onWheel={handleWheel}
         onPointerDown={handlePointerDown}

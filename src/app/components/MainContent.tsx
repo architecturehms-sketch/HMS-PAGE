@@ -108,7 +108,7 @@ export function MainContent({ isVisible, onOpenAdmin, onGoToCarousel, onSelectCa
         {/* Right Content */}
         <main className="w-full md:w-[75vw] md:ml-[25vw] relative z-10 flex flex-col shrink-0 min-h-screen">
           {/* Top Header Grid */}
-          <header className="p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-[10px] sm:text-xs uppercase border-b border-[#1a1a1a]/30 leading-relaxed tracking-widest text-[#1a1a1a] bg-[#f4f4f0]">
+          <header className={`p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-[10px] sm:text-xs uppercase border-b leading-relaxed tracking-widest transition-colors duration-500 ${activeTab === 'about' ? 'bg-[#1a1a1a] text-[#f4f4f0] border-white/20' : 'bg-[#f4f4f0] text-[#1a1a1a] border-[#1a1a1a]/30'}`}>
             <div>
               HMS ARCHITECTURE<br />
               BASED IN {pageData.address.toUpperCase()}
@@ -123,7 +123,7 @@ export function MainContent({ isVisible, onOpenAdmin, onGoToCarousel, onSelectCa
             </div>
           </header>
 
-          <div className="flex-1 flex flex-col bg-[#f4f4f0]">
+          <div className={`flex-1 flex flex-col transition-colors duration-500 ${activeTab === 'about' ? 'bg-[#1a1a1a]' : 'bg-[#f4f4f0]'}`}>
             {activeTab === 'index' && (
               <>
                 {/* Big Typography Hero */}
@@ -192,13 +192,13 @@ export function MainContent({ isVisible, onOpenAdmin, onGoToCarousel, onSelectCa
             {activeTab === 'about' && <AboutContent pageData={pageData} />}
             
             {/* Footer */}
-            <footer className="px-4 sm:px-6 py-6 border-t border-[#1a1a1a]/30 font-mono text-[10px] sm:text-xs uppercase tracking-widest flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mt-auto">
-              <div className="text-[#1a1a1a]/60">
+            <footer className={`px-4 sm:px-6 py-6 border-t font-mono text-[10px] sm:text-xs uppercase tracking-widest flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mt-auto transition-colors duration-500 ${activeTab === 'about' ? 'bg-[#1a1a1a] border-white/20' : 'bg-[#f4f4f0] border-[#1a1a1a]/30'}`}>
+              <div className={activeTab === 'about' ? 'text-[#f4f4f0]/60' : 'text-[#1a1a1a]/60'}>
                 © {new Date().getFullYear()} HMS ARCHITECTS.
               </div>
               <div className="flex gap-4 items-center">
                 {onOpenAdmin && (
-                  <button onClick={onOpenAdmin} className="appearance-none bg-transparent p-0 border-none hover:underline underline-offset-4 text-[#1a1a1a]/40 hover:text-[#1a1a1a] text-[10px] sm:text-xs font-normal">ADMIN</button>
+                  <button onClick={onOpenAdmin} className={`appearance-none bg-transparent p-0 border-none hover:underline underline-offset-4 text-[10px] sm:text-xs font-normal transition-colors ${activeTab === 'about' ? 'text-[#f4f4f0]/40 hover:text-[#f4f4f0]' : 'text-[#1a1a1a]/40 hover:text-[#1a1a1a]'}`}>ADMIN</button>
                 )}
               </div>
             </footer>

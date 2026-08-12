@@ -766,7 +766,7 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[200] bg-[#1a1a1a] text-[#f4f4f0] flex flex-col items-center justify-center font-mono"
+        className="fixed inset-0 z-[200] bg-[#1a1a1a] text-[#f4f4f0] flex flex-col items-center justify-center font-mono selection:bg-[#f4f4f0] selection:text-[#1a1a1a]"
       >
         <button 
           onClick={onClose} 
@@ -824,7 +824,7 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[200] bg-[#1a1a1a] text-[#f4f4f0] flex font-mono"
+      className="fixed inset-0 z-[200] bg-[#1a1a1a] text-[#f4f4f0] flex font-mono selection:bg-[#f4f4f0] selection:text-[#1a1a1a]"
     >
       {/* Sidebar Navigation */}
       <aside className="w-64 border-r border-[#f4f4f0]/20 flex flex-col h-full bg-[#111]">

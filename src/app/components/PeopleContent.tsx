@@ -246,31 +246,45 @@ export function PeopleContent({ team }: PeopleContentProps) {
                 >
                   <div className="w-10 h-[1px] bg-white/20 mt-12 md:mt-20 mb-12 md:mb-20"></div>
 
-                  <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 text-center px-4 pb-24 md:pb-40">
-                    {/* Education */}
-                    {(selectedMember.educationKr || selectedMember.educationEn) && (
-                      <div className="flex flex-col items-center">
-                        <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3">Education</h4>
-                        <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.educationKr}</div>
-                        <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light mt-1">{selectedMember.educationEn}</div>
+                  <div className="w-full max-w-6xl flex flex-col md:flex-row items-center md:items-start gap-12 px-4 pb-24 md:pb-40">
+                    {/* Left: Original Image */}
+                    <div className="w-full md:w-1/3 flex justify-center md:justify-end shrink-0">
+                      <div className="w-48 md:w-64 aspect-[3/4] overflow-hidden rounded-[2px]" style={{ boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+                        <img 
+                          src={selectedMember.img} 
+                          alt={selectedMember.name}
+                          className="w-full h-full object-cover grayscale opacity-90 hover:grayscale-0 hover:opacity-100 transition-all duration-500"
+                        />
                       </div>
-                    )}
-                    {/* Career */}
-                    {(selectedMember.careerKr || selectedMember.careerEn) && (
-                      <div className="flex flex-col items-center">
-                        <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3">Career</h4>
-                        <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.careerKr}</div>
-                        <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light mt-1">{selectedMember.careerEn}</div>
-                      </div>
-                    )}
-                    {/* Record */}
-                    {(selectedMember.recordKr || selectedMember.recordEn) && (
-                      <div className="flex flex-col items-center md:col-span-1">
-                        <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3">Record</h4>
-                        <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.recordKr}</div>
-                        <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light mt-1">{selectedMember.recordEn}</div>
-                      </div>
-                    )}
+                    </div>
+
+                    {/* Right: Career Details */}
+                    <div className="w-full md:w-2/3 grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-12 text-center md:text-left pt-4 md:pt-0">
+                      {/* Education */}
+                      {(selectedMember.educationKr || selectedMember.educationEn) && (
+                        <div className="flex flex-col items-center md:items-start">
+                          <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3 md:mb-4">Education</h4>
+                          <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.educationKr}</div>
+                          <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light mt-1.5">{selectedMember.educationEn}</div>
+                        </div>
+                      )}
+                      {/* Career */}
+                      {(selectedMember.careerKr || selectedMember.careerEn) && (
+                        <div className="flex flex-col items-center md:items-start">
+                          <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3 md:mb-4">Career</h4>
+                          <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.careerKr}</div>
+                          <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light mt-1.5">{selectedMember.careerEn}</div>
+                        </div>
+                      )}
+                      {/* Record */}
+                      {(selectedMember.recordKr || selectedMember.recordEn) && (
+                        <div className="flex flex-col items-center md:items-start sm:col-span-2">
+                          <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3 md:mb-4">Record</h4>
+                          <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.recordKr}</div>
+                          <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light mt-1.5">{selectedMember.recordEn}</div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </motion.div>
               )}

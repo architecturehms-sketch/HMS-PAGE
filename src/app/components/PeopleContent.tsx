@@ -187,11 +187,7 @@ export function PeopleContent({ team }: PeopleContentProps) {
               <p className="text-xs md:text-sm font-mono text-[#f4f4f0]/60 uppercase tracking-widest mb-4">
                 {displayTeam[activeIndex].role}
               </p>
-              <div className="w-10 h-[1px] bg-white/20 mb-4"></div>
-              <p className="text-xs md:text-sm text-[#f4f4f0]/80 leading-relaxed font-light whitespace-pre-wrap max-w-2xl mx-auto">
-                {/* @ts-ignore */}
-                {displayTeam[activeIndex].history || 'HMS 건축사사무소의 철학과 비전을 공유하며, 공간의 본질과 재료의 물성을 탐구하는 건축가입니다.\n다양한 스케일의 프로젝트를 통해 사용자 경험 중심의 혁신적인 공간을 창출하고 있습니다.'}
-              </p>
+
             </motion.div>
           ) : (
             <motion.div

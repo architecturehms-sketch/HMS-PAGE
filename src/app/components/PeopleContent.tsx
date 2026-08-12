@@ -245,9 +245,9 @@ export function PeopleContent({ team }: PeopleContentProps) {
                   className="w-full overflow-hidden flex flex-col items-center origin-top cursor-default"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="w-10 h-[1px] bg-white/20 mt-6 mb-8"></div>
+                  <div className="w-10 h-[1px] bg-white/20 mt-8 md:mt-12 mb-8 md:mb-12"></div>
 
-                  <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 text-center px-4 pb-4">
+                  <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 text-center px-4 pb-12 md:pb-24">
                     {/* Education */}
                     {(selectedMember.educationKr || selectedMember.educationEn) && (
                       <div className="flex flex-col items-center">

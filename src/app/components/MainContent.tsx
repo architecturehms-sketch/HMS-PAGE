@@ -203,24 +203,7 @@ export function MainContent({ isVisible, onOpenAdmin, onGoToCarousel, onSelectCa
               </div>
             </footer>
 
-            {/* Marquee Banner (Only visible on About page) */}
-            {activeTab === 'about' && (
-              pageData.clientLogos && pageData.clientLogos.length > 0 ? (
-                <section className="overflow-hidden whitespace-nowrap border-t border-[#1a1a1a]/30 py-2 sm:py-3 bg-[#1a1a1a] shrink-0 flex items-center">
-                  <div className="inline-flex animate-[marquee_100s_linear_infinite] gap-12 sm:gap-24 px-6 sm:px-12 items-center min-w-max">
-                    {Array(8).fill(pageData.clientLogos).flat().map((logo, idx) => (
-                      <img key={idx} src={logo} alt="Client Logo" className="h-5 sm:h-6 md:h-8 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity" />
-                    ))}
-                  </div>
-                </section>
-              ) : (
-                <section className="overflow-hidden whitespace-nowrap border-t border-[#1a1a1a]/30 py-2 sm:py-3 bg-[#1a1a1a] text-[#f4f4f0] shrink-0">
-                  <div className="inline-block animate-[marquee_100s_linear_infinite] text-xs font-mono uppercase tracking-widest text-transparent hover:text-[#f4f4f0] font-light transition-colors duration-300" style={{ WebkitTextStroke: '0.5px #f4f4f0' }}>
-                    ARCHITECTURE &nbsp;///&nbsp; INTERIOR DESIGN &nbsp;///&nbsp; MASTER PLANNING &nbsp;///&nbsp; SPATIAL BRANDING &nbsp;///&nbsp; ARCHITECTURE &nbsp;///&nbsp; INTERIOR DESIGN &nbsp;///&nbsp; MASTER PLANNING &nbsp;///&nbsp; SPATIAL BRANDING &nbsp;///&nbsp;
-                  </div>
-                </section>
-              )
-            )}
+
           </div>
         </main>
       </div>

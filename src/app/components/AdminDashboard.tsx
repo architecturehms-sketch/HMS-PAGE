@@ -191,10 +191,15 @@ interface DraggableCategoryRowProps {
   index: number;
   moveCategory: (dragIndex: number, hoverIndex: number) => void;
   onDelete: (category: string) => void;
+  onRename: (oldCat: string, newCat: string) => void;
 }
 
-function DraggableCategoryRow({ category, index, moveCategory, onDelete }: DraggableCategoryRowProps) {
+function DraggableCategoryRow({ category, index, moveCategory, onDelete, onRename }: DraggableCategoryRowProps) {
   const ref = React.useRef<HTMLDivElement>(null);
+  const dragRef = React.useRef<HTMLDivElement>(null);
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [editValue, setEditValue] = React.useState(category);
+
   const [{ handlerId }, drop] = useDrop({
     accept: ItemTypes.CATEGORY,
     collect(monitor) { return { handlerId: monitor.getHandlerId() }; },
@@ -219,16 +224,70 @@ function DraggableCategoryRow({ category, index, moveCategory, onDelete }: Dragg
     item: () => ({ id: category, index }),
     collect: (monitor) => ({ isDragging: monitor.isDragging() }),
   });
-  drag(drop(ref));
+  
+  drag(dragRef);
+  drop(ref);
+
   return (
     <div ref={ref} data-handler-id={handlerId} className={`flex items-center justify-between px-3 py-2 bg-[#1a1a1a] border border-[#f4f4f0]/20 rounded-sm text-xs ${isDragging ? 'opacity-50' : 'opacity-100'}`}>
-      <div className="flex items-center gap-2">
-        <GripVertical size={14} className="cursor-move text-[#f4f4f0]/40 hover:text-white shrink-0" />
-        <span className="uppercase tracking-widest">{category}</span>
+      <div className="flex items-center gap-2 flex-1">
+        <div ref={dragRef} className="cursor-move text-[#f4f4f0]/40 hover:text-white shrink-0 p-1 -ml-1">
+          <GripVertical size={14} />
+        </div>
+        {isEditing ? (
+          <input
+            autoFocus
+            type="text"
+            className="flex-1 bg-transparent border-b border-[#f4f4f0]/30 outline-none uppercase tracking-widest px-1 text-[#f4f4f0] w-full"
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                setIsEditing(false);
+                onRename(category, editValue);
+              } else if (e.key === 'Escape') {
+                setIsEditing(false);
+                setEditValue(category);
+              }
+            }}
+            onBlur={() => {
+              setIsEditing(false);
+              setEditValue(category);
+            }}
+          />
+        ) : (
+          <span className="uppercase tracking-widest">{category}</span>
+        )}
       </div>
-      <button onClick={() => onDelete(category)} type="button" className="text-red-400 hover:text-red-300 ml-2">
-        <X size={12} />
-      </button>
+      
+      {!isEditing && (
+        <div className="flex items-center">
+          <button 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsEditing(true);
+            }} 
+            onPointerDown={(e) => e.stopPropagation()}
+            type="button" 
+            className="text-[#f4f4f0]/40 hover:text-white p-1 relative z-10 cursor-pointer"
+          >
+            <Edit2 size={12} />
+          </button>
+          <button 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onDelete(category);
+            }} 
+            onPointerDown={(e) => e.stopPropagation()}
+            type="button" 
+            className="text-red-400 hover:text-red-300 ml-1 p-1 relative z-10 cursor-pointer"
+          >
+            <X size={12} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -403,7 +462,7 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
   
   const [selectedProjectCategory, setSelectedProjectCategory] = useState<string | null>(null);
 
-  const projectCategories = Array.from(new Set(projects.flatMap(p => typeof p.desc === 'string' ? p.desc.split(',').map(c => c.trim()) : []))).filter(Boolean) as string[];
+  const projectCategories = Array.from(new Set(projects.filter(p => !p.isLogo && !p.carouselOnly).flatMap(p => typeof p.desc === 'string' ? p.desc.split(',').map(c => c.trim()) : []))).filter(Boolean) as string[];
   const existingCategories = Array.from(new Set([...(pageData?.customCategories || []), ...projectCategories]));
 
   const filteredProjects = React.useMemo(() => {
@@ -1696,7 +1755,41 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
                         category={cat} 
                         index={index} 
                         moveCategory={moveCategory} 
+                        onRename={async (oldCat, newCat) => {
+                          if (oldCat === newCat || !newCat.trim()) return;
+                          const upperNew = newCat.trim().toUpperCase();
+                          
+                          // 1. 해당 카테고리를 사용하는 모든 프로젝트의 카테고리 업데이트 (DB 즉시 반영)
+                          const projectsToUpdate = projects.filter(p => p.desc && p.desc.split(',').map(c => c.trim()).includes(oldCat));
+                          for (const p of projectsToUpdate) {
+                            const cats = p.desc.split(',').map(c => c.trim());
+                            const updatedCats = cats.map(c => c === oldCat ? upperNew : c);
+                            const newDesc = updatedCats.join(', ');
+                            await updateDoc(doc(db, 'projects', p.id as string), { desc: newDesc });
+                          }
+
+                          // 2. pageData의 customCategories 및 순서 정보 업데이트
+                          let newCats = pageData.customCategories || [];
+                          if (newCats.includes(oldCat)) {
+                            newCats = newCats.map(c => c === oldCat ? upperNew : c);
+                          } else if (!projectCategories.includes(oldCat)) {
+                            newCats = [...newCats, upperNew];
+                          }
+                          
+                          const newOrders = { ...pageData.categoryProjectOrders };
+                          if (newOrders[oldCat]) {
+                            newOrders[upperNew] = newOrders[oldCat];
+                            delete newOrders[oldCat];
+                          }
+                          
+                          setPageData({...pageData, customCategories: newCats, categoryProjectOrders: newOrders});
+                          setHasUnsavedChanges(true);
+                        }}
                         onDelete={(category) => {
+                          if (projectCategories.includes(category)) {
+                            alert("This category is currently in use by one or more projects. Please change the category of those projects first before deleting.");
+                            return;
+                          }
                           const newCats = existingCategories.filter(c => c !== category);
                           setPageData({...pageData, customCategories: newCats});
                           setHasUnsavedChanges(true);

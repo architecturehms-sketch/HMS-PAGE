@@ -74,10 +74,10 @@ export function AboutContent({ pageData }: AboutContentProps) {
   };
 
   return (
-    <div className="flex-1 flex flex-col w-full h-full min-h-[90vh] sm:min-h-[100vh] bg-[#1a1a1a] relative overflow-hidden group select-none">
+    <div className="flex-1 flex flex-col w-full h-full bg-[#1a1a1a] relative overflow-hidden group select-none">
       
       {/* 슬라이드 이미지 영역 */}
-      <div className="relative w-full h-full flex items-center justify-center overflow-hidden min-h-[90vh] sm:min-h-[100vh]">
+      <div className="relative w-full h-full flex-1 flex items-center justify-center overflow-hidden">
         <AnimatePresence initial={false} custom={direction}>
           <motion.img
             key={currentIndex}

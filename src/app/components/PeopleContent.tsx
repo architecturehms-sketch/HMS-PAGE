@@ -345,15 +345,7 @@ export function PeopleContent({ team }: PeopleContentProps) {
                     style={{ WebkitUserDrag: 'none' }}
                   />
                   
-                  {/* Title overlay - visible only when centered */}
-                  <div className="title-overlay absolute inset-x-0 bottom-0 p-2 md:p-3 bg-gradient-to-t from-black via-black/80 to-transparent opacity-0 transition-opacity duration-300 pointer-events-none">
-                    <h3 className="text-[#f4f4f0] text-[8px] md:text-[11px] font-bold tracking-tight drop-shadow-md whitespace-nowrap">
-                      {person.name}
-                    </h3>
-                    <p className="text-[#f4f4f0]/60 text-[7px] md:text-[8px] font-mono uppercase tracking-wider mt-0.5 whitespace-nowrap">
-                      {person.role}
-                    </p>
-                  </div>
+
                 </div>
               </div>
             ))}

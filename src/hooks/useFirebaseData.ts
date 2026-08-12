@@ -26,6 +26,7 @@ export interface Project {
   showInCarousel?: boolean;
   carouselOnly?: boolean;
   videoUrl?: string;
+  videoUrl2?: string;
   location?: string;
   status?: string;
   client?: string;

@@ -444,7 +444,7 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
     };
   }, []);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, index?: number | 'video' | 'team' | 'clientLogo') => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, index?: number | 'video' | 'video2' | 'team' | 'clientLogo') => {
     let file = e.target.files?.[0];
     if (!file) return;
     try {
@@ -459,6 +459,8 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
         setCurrentTeamMember({...currentTeamMember, img: url});
       } else if (index === 'video') {
         setEditingProject({...editingProject, videoUrl: url});
+      } else if (index === 'video2') {
+        setEditingProject({...editingProject, videoUrl2: url});
       } else if (index === 'clientLogo') {
         setPageData({...pageData, clientLogos: [...(pageData.clientLogos || []), url]});
       } else if (index !== undefined) {
@@ -1224,6 +1226,45 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
                               <video src={editingProject.videoUrl} className="w-full h-full object-cover" />
                             ) : (
                               <span className="text-[#f4f4f0]/20 text-[10px] uppercase">No Video</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {!editingProject.isLogo && (
+                      <div className="space-y-2 pt-4 border-t border-[#f4f4f0]/20">
+                        <h3 className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60 mb-2">Project Video 2 (Optional)</h3>
+                        <div className="flex gap-4 items-start">
+                          <div className="flex-1">
+                            <input 
+                              type="text" 
+                              value={editingProject.videoUrl2 || ''}
+                              onChange={e => setEditingProject({...editingProject, videoUrl2: e.target.value})}
+                              className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0]"
+                              placeholder="Second Video URL (e.g. mp4)"
+                            />
+                            <div className="mt-2 flex items-center">
+                              <label className={`text-[10px] uppercase tracking-widest text-[#f4f4f0] mr-3 border border-[#f4f4f0]/30 px-3 py-1 cursor-pointer transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#f4f4f0] hover:text-[#1a1a1a]'}`}>
+                                {uploading ? 'UPLOADING...' : 'UPLOAD VIDEO 2'}
+                                <input type="file" className="hidden" accept="video/*" disabled={uploading} onChange={(e) => handleFileUpload(e, 'video2')} />
+                              </label>
+                              {editingProject.videoUrl2 && (
+                                <button 
+                                  type="button" 
+                                  onClick={() => setEditingProject({...editingProject, videoUrl2: ''})}
+                                  className="text-[10px] uppercase tracking-widest text-red-400 hover:text-red-300 border border-red-500/30 hover:border-red-400 px-3 py-1 transition-colors"
+                                >
+                                  REMOVE VIDEO 2
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          <div className="w-24 h-16 border border-[#f4f4f0]/30 flex items-center justify-center bg-[#1a1a1a] overflow-hidden shrink-0">
+                            {editingProject.videoUrl2 ? (
+                              <video src={editingProject.videoUrl2} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-[#f4f4f0]/20 text-[10px] uppercase">No Video 2</span>
                             )}
                           </div>
                         </div>

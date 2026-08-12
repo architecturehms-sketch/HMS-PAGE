@@ -245,6 +245,22 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
             </div>
           )}
 
+          {/* 4. Second Video Player */}
+          {project.videoUrl2 && (
+            <div className="w-full max-w-7xl mx-auto px-6 md:px-12">
+              <div className="w-full h-[50vh] md:h-[90vh] bg-[#111] relative overflow-hidden border border-[#f4f4f0]/10">
+                <video 
+                  src={project.videoUrl2} 
+                  autoPlay 
+                  controls
+                  loop 
+                  playsInline
+                  className="absolute inset-0 w-full h-full object-cover transition-all duration-700 opacity-90 hover:opacity-100"
+                />
+              </div>
+            </div>
+          )}
+
         </div>
 
         <div className="w-full max-w-5xl border-t border-[#f4f4f0]/20 pt-12 flex justify-between items-center mb-24">

@@ -196,58 +196,59 @@ export function PeopleContent({ team }: PeopleContentProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
               transition={{ duration: 0.4 }}
-              className="w-full max-w-6xl flex flex-col md:flex-row gap-8 md:gap-16 items-start justify-center cursor-default pt-4"
+              className="w-full max-w-5xl flex flex-col items-center justify-start cursor-default pt-2"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Left Side: Name & Role */}
-              <div className="w-full md:w-1/3 text-center md:text-right border-b md:border-b-0 md:border-r border-white/10 pb-6 md:pb-0 md:pr-8">
-                <h2 className="text-3xl md:text-5xl font-black tracking-tighter drop-shadow-lg">{selectedMember.name}</h2>
-                <h3 className="text-sm md:text-lg text-[#f4f4f0]/80 mt-2 font-medium tracking-wide">{selectedMember.role}</h3>
-                
-                {(selectedMember.nameEn || selectedMember.roleEn) && (
-                  <div className="mt-6 md:mt-8 pt-6 md:pt-8 border-t border-[#f4f4f0]/10">
-                    <h2 className="text-xl md:text-3xl font-bold tracking-tight text-[#f4f4f0]/60">{selectedMember.nameEn}</h2>
-                    <h3 className="text-xs md:text-sm text-[#f4f4f0]/40 mt-1 uppercase tracking-widest font-mono">{selectedMember.roleEn}</h3>
-                  </div>
-                )}
-
+              {/* Name & Role (Matches basic view) */}
+              <div className="text-center flex flex-col items-center mb-6">
+                <div className="flex items-baseline justify-center gap-3">
+                  <h1 className="text-2xl md:text-4xl font-black tracking-tight">{selectedMember.name}</h1>
+                  {selectedMember.nameEn && (
+                    <span className="text-sm md:text-lg text-[#f4f4f0]/40 font-bold tracking-wider">{selectedMember.nameEn}</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-center gap-2 mt-2">
+                  <p className="text-xs md:text-sm font-mono text-[#f4f4f0]/60 uppercase tracking-widest">{selectedMember.role}</p>
+                  {selectedMember.roleEn && (
+                    <>
+                      <span className="text-[#f4f4f0]/20 text-xs">|</span>
+                      <p className="text-[10px] md:text-xs font-mono text-[#f4f4f0]/30 uppercase tracking-widest">{selectedMember.roleEn}</p>
+                    </>
+                  )}
+                </div>
                 {selectedMember.specializations && (
-                  <div className="mt-6 md:mt-8 text-[10px] md:text-xs text-[#E3342F] uppercase tracking-[0.2em] font-mono border border-[#E3342F]/30 bg-[#E3342F]/5 py-2 px-4 rounded-full inline-block">
+                  <div className="mt-3 text-[10px] text-[#E3342F] uppercase tracking-[0.2em] font-mono bg-[#E3342F]/10 py-1.5 px-3 rounded-full inline-block">
                     {selectedMember.specializations}
                   </div>
                 )}
               </div>
 
-              {/* Right Side: Education, Career, Record */}
-              <div className="w-full md:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+              <div className="w-10 h-[1px] bg-white/20 mb-8"></div>
+
+              {/* Education, Career, Record (Grid Layout) */}
+              <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 text-center px-4">
                 {/* Education */}
                 {(selectedMember.educationKr || selectedMember.educationEn) && (
-                  <div>
+                  <div className="flex flex-col items-center">
                     <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3">Education</h4>
-                    <div className="space-y-2">
-                      <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.educationKr}</div>
-                      <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light">{selectedMember.educationEn}</div>
-                    </div>
+                    <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.educationKr}</div>
+                    <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light mt-1">{selectedMember.educationEn}</div>
                   </div>
                 )}
                 {/* Career */}
                 {(selectedMember.careerKr || selectedMember.careerEn) && (
-                  <div>
+                  <div className="flex flex-col items-center">
                     <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3">Career</h4>
-                    <div className="space-y-2">
-                      <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.careerKr}</div>
-                      <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light">{selectedMember.careerEn}</div>
-                    </div>
+                    <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.careerKr}</div>
+                    <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light mt-1">{selectedMember.careerEn}</div>
                   </div>
                 )}
                 {/* Record */}
                 {(selectedMember.recordKr || selectedMember.recordEn) && (
-                  <div className="md:col-span-2">
+                  <div className="flex flex-col items-center md:col-span-1">
                     <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3">Record</h4>
-                    <div className="space-y-2 flex flex-col md:flex-row gap-4 md:gap-8">
-                      <div className="flex-1 text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.recordKr}</div>
-                      <div className="flex-1 text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light">{selectedMember.recordEn}</div>
-                    </div>
+                    <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.recordKr}</div>
+                    <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light mt-1">{selectedMember.recordEn}</div>
                   </div>
                 )}
               </div>

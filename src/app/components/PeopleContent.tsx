@@ -244,7 +244,7 @@ export function PeopleContent({ team }: PeopleContentProps) {
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                   className="w-full overflow-hidden flex flex-col items-center origin-top cursor-default"
                 >
-                  <div className="w-10 h-[1px] bg-white/20 mt-12 md:mt-20 mb-12 md:mb-20"></div>
+                  <div className="w-10 h-[1px] bg-white/20 mt-6 md:mt-10 mb-8 md:mb-12"></div>
 
                   <div className="w-full max-w-6xl flex flex-col md:flex-row items-center md:items-start gap-12 px-4 pb-24 md:pb-40">
                     {/* Left: Original Image */}

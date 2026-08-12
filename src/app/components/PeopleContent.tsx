@@ -343,11 +343,8 @@ export function PeopleContent({ team }: PeopleContentProps) {
                     if (diff > 180) target -= 360;
                     else if (diff < -180) target += 360;
                     
-                    if (Math.abs(diff) < 5) {
-                      setSelectedMember(person);
-                    } else {
-                      targetRotation.current = target;
-                    }
+                    targetRotation.current = target;
+                    setSelectedMember(person);
                   }}
                   className="card-inner w-full h-full relative transition-all duration-300 ease-out bg-[#0a0a0a] overflow-hidden rounded-[2px] cursor-pointer"
                   style={{ boxShadow: '0 10px 30px rgba(0,0,0,0.8)' }}

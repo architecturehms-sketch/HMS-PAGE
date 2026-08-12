@@ -285,8 +285,8 @@ export function PeopleContent({ team }: PeopleContentProps) {
         ref={containerRef}
         className={`relative flex-1 w-full select-none touch-none cursor-grab active:cursor-grabbing bg-[#111] transition-all duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)] ${
           selectedMember 
-            ? 'opacity-20 grayscale blur-[4px] pointer-events-none scale-95' 
-            : 'opacity-100 grayscale-0 blur-0 scale-100'
+            ? 'opacity-20 grayscale pointer-events-none scale-95' 
+            : 'opacity-100 grayscale-0 scale-100'
         }`}
         onWheel={handleWheel}
         onPointerDown={handlePointerDown}

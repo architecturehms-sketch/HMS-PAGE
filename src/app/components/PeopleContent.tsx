@@ -243,7 +243,6 @@ export function PeopleContent({ team }: PeopleContentProps) {
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                   className="w-full overflow-hidden flex flex-col items-center origin-top cursor-default"
-                  onClick={(e) => e.stopPropagation()}
                 >
                   <div className="w-10 h-[1px] bg-white/20 mt-12 md:mt-20 mb-12 md:mb-20"></div>
 

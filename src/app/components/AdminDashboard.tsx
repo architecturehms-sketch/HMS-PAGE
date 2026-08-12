@@ -1426,30 +1426,122 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
                   <form onSubmit={handleSaveTeamMember} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <label className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60">Name</label>
+                        <label className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60">Name (Korean)</label>
                         <input 
                           type="text" 
                           required
                           value={currentTeamMember.name || ''}
                           onChange={e => setCurrentTeamMember({...currentTeamMember, name: e.target.value})}
                           className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0]"
-                          placeholder="e.g. H.M. SON"
+                          placeholder="e.g. 강민정"
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60">Role / Position</label>
+                        <label className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60">Name (English)</label>
+                        <input 
+                          type="text" 
+                          value={currentTeamMember.nameEn || ''}
+                          onChange={e => setCurrentTeamMember({...currentTeamMember, nameEn: e.target.value})}
+                          className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0]"
+                          placeholder="e.g. Kang Minjung"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60">Role (Korean)</label>
                         <input 
                           type="text" 
                           required
                           value={currentTeamMember.role || ''}
                           onChange={e => setCurrentTeamMember({...currentTeamMember, role: e.target.value})}
                           className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0]"
-                          placeholder="e.g. Principal Architect"
+                          placeholder="e.g. 소장 (건축사)"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60">Role (English)</label>
+                        <input 
+                          type="text" 
+                          value={currentTeamMember.roleEn || ''}
+                          onChange={e => setCurrentTeamMember({...currentTeamMember, roleEn: e.target.value})}
+                          className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0]"
+                          placeholder="e.g. Executive Manager (kira)"
                         />
                       </div>
                     </div>
 
                     <div className="space-y-2">
+                      <label className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60">Specializations</label>
+                      <input 
+                        type="text" 
+                        value={currentTeamMember.specializations || ''}
+                        onChange={e => setCurrentTeamMember({...currentTeamMember, specializations: e.target.value})}
+                        className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0]"
+                        placeholder="e.g. 병원건축·주거시설 | Hospital·Residential"
+                      />
+                    </div>
+
+                    <div className="space-y-4 pt-4 border-t border-[#f4f4f0]/20">
+                      <h3 className="text-[10px] uppercase tracking-widest text-[#f4f4f0] mb-2">Education (학력)</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <textarea
+                          rows={4}
+                          value={currentTeamMember.educationKr || ''}
+                          onChange={e => setCurrentTeamMember({...currentTeamMember, educationKr: e.target.value})}
+                          className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0] resize-none"
+                          placeholder="국문 학력 (줄바꿈으로 구분)"
+                        />
+                        <textarea
+                          rows={4}
+                          value={currentTeamMember.educationEn || ''}
+                          onChange={e => setCurrentTeamMember({...currentTeamMember, educationEn: e.target.value})}
+                          className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0] resize-none"
+                          placeholder="English Education (One per line)"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-4 pt-4 border-t border-[#f4f4f0]/20">
+                      <h3 className="text-[10px] uppercase tracking-widest text-[#f4f4f0] mb-2">Career (경력)</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <textarea
+                          rows={5}
+                          value={currentTeamMember.careerKr || ''}
+                          onChange={e => setCurrentTeamMember({...currentTeamMember, careerKr: e.target.value})}
+                          className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0] resize-none"
+                          placeholder="국문 경력 (줄바꿈으로 구분)"
+                        />
+                        <textarea
+                          rows={5}
+                          value={currentTeamMember.careerEn || ''}
+                          onChange={e => setCurrentTeamMember({...currentTeamMember, careerEn: e.target.value})}
+                          className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0] resize-none"
+                          placeholder="English Career (One per line)"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-4 pt-4 border-t border-[#f4f4f0]/20">
+                      <h3 className="text-[10px] uppercase tracking-widest text-[#f4f4f0] mb-2">Record (이력)</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <textarea
+                          rows={8}
+                          value={currentTeamMember.recordKr || ''}
+                          onChange={e => setCurrentTeamMember({...currentTeamMember, recordKr: e.target.value})}
+                          className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0] resize-none"
+                          placeholder="국문 이력 (줄바꿈으로 구분)"
+                        />
+                        <textarea
+                          rows={8}
+                          value={currentTeamMember.recordEn || ''}
+                          onChange={e => setCurrentTeamMember({...currentTeamMember, recordEn: e.target.value})}
+                          className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0] resize-none"
+                          placeholder="English Record (One per line)"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 pt-4 border-t border-[#f4f4f0]/20">
                       <label className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60">Profile Image</label>
                       <div className="flex gap-4 items-start">
                         <div className="flex-1">

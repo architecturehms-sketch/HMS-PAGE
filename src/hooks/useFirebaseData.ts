@@ -10,6 +10,15 @@ export interface TeamMember {
   img: string;
   order?: number;
   createdAt?: any;
+  nameEn?: string;
+  roleEn?: string;
+  specializations?: string;
+  educationKr?: string;
+  educationEn?: string;
+  careerKr?: string;
+  careerEn?: string;
+  recordKr?: string;
+  recordEn?: string;
 }
 
 export interface Project {

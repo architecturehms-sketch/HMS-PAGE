@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useMemo, useState } from 'react';
 import { TeamMember } from '../../hooks/useFirebaseData';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
 
 interface PeopleContentProps {
   team: TeamMember[];
@@ -22,6 +24,9 @@ export function PeopleContent({ team }: PeopleContentProps) {
   // Active person state
   const [activeIndex, setActiveIndex] = useState(0);
   const activeIndexRef = useRef(0);
+  
+  // Popup state
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
 
   // Responsive variables (matching CarouselUI)
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -220,7 +225,11 @@ export function PeopleContent({ team }: PeopleContentProps) {
                     if (diff > 180) target -= 360;
                     else if (diff < -180) target += 360;
                     
-                    targetRotation.current = target;
+                    if (Math.abs(diff) < 5) {
+                      setSelectedMember(person);
+                    } else {
+                      targetRotation.current = target;
+                    }
                   }}
                   className="card-inner w-full h-full relative transition-all duration-300 ease-out bg-[#0a0a0a] overflow-hidden rounded-[2px] cursor-pointer"
                   style={{ boxShadow: '0 10px 30px rgba(0,0,0,0.8)' }}
@@ -251,6 +260,124 @@ export function PeopleContent({ team }: PeopleContentProps) {
           {isMobile ? 'Swipe to Rotate' : 'Scroll or Drag to Rotate'}
         </div>
       </div>
+
+      {/* Modal Popup */}
+      <AnimatePresence>
+        {selectedMember && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedMember(null)}
+            className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-8 cursor-pointer"
+          >
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 20, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white text-[#1a1a1a] w-full max-w-4xl max-h-[90vh] overflow-y-auto cursor-default relative p-8 sm:p-12 shadow-2xl rounded-sm"
+            >
+              <button 
+                onClick={() => setSelectedMember(null)}
+                className="absolute top-4 right-4 sm:top-6 sm:right-6 text-[#1a1a1a]/40 hover:text-[#1a1a1a] transition-colors"
+              >
+                <X size={24} />
+              </button>
+
+              <div className="flex flex-col md:flex-row gap-8 md:gap-16">
+                {/* Left content area */}
+                <div className="flex-1 space-y-10 order-2 md:order-1">
+                  
+                  {/* Header Area */}
+                  <div className="border-b border-[#E3342F] pb-4">
+                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                      <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{selectedMember.name}</h2>
+                      <span className="text-sm sm:text-base font-semibold text-[#1a1a1a]/80">{selectedMember.role}</span>
+                      <span className="text-xl sm:text-2xl text-[#1a1a1a]/20 mx-1 hidden sm:inline">|</span>
+                      <h2 className="text-xl sm:text-2xl font-bold text-[#1a1a1a]/80 tracking-tight">{selectedMember.nameEn || ''}</h2>
+                      <span className="text-sm sm:text-base font-semibold text-[#1a1a1a]/60">{selectedMember.roleEn || ''}</span>
+                    </div>
+                    {selectedMember.specializations && (
+                      <div className="mt-2 text-sm font-semibold text-[#1a1a1a]/70">
+                        {selectedMember.specializations}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 2-column Details */}
+                  <div className="space-y-8">
+                    {/* Education */}
+                    {(selectedMember.educationKr || selectedMember.educationEn) && (
+                      <div className="flex flex-col sm:flex-row gap-4 sm:gap-12">
+                        <div className="flex-1">
+                          <h4 className="font-bold text-sm mb-2">학력</h4>
+                          <div className="text-xs sm:text-sm text-[#1a1a1a] whitespace-pre-wrap leading-relaxed">
+                            {selectedMember.educationKr}
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-sm mb-2 uppercase tracking-widest">Education</h4>
+                          <div className="text-xs sm:text-sm text-[#1a1a1a] whitespace-pre-wrap leading-relaxed">
+                            {selectedMember.educationEn}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Career */}
+                    {(selectedMember.careerKr || selectedMember.careerEn) && (
+                      <div className="flex flex-col sm:flex-row gap-4 sm:gap-12">
+                        <div className="flex-1">
+                          <h4 className="font-bold text-sm mb-2">경력</h4>
+                          <div className="text-xs sm:text-sm text-[#1a1a1a] whitespace-pre-wrap leading-relaxed">
+                            {selectedMember.careerKr}
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-sm mb-2 uppercase tracking-widest">Career</h4>
+                          <div className="text-xs sm:text-sm text-[#1a1a1a] whitespace-pre-wrap leading-relaxed">
+                            {selectedMember.careerEn}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Record */}
+                    {(selectedMember.recordKr || selectedMember.recordEn) && (
+                      <div className="flex flex-col sm:flex-row gap-4 sm:gap-12">
+                        <div className="flex-1">
+                          <h4 className="font-bold text-sm mb-2">이력</h4>
+                          <div className="text-xs sm:text-sm text-[#1a1a1a] whitespace-pre-wrap leading-relaxed">
+                            {selectedMember.recordKr}
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-sm mb-2 uppercase tracking-widest">Record</h4>
+                          <div className="text-xs sm:text-sm text-[#1a1a1a] whitespace-pre-wrap leading-relaxed">
+                            {selectedMember.recordEn}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                </div>
+
+                {/* Right Image area */}
+                <div className="w-[80%] max-w-[240px] sm:w-1/3 md:w-[30%] shrink-0 order-1 md:order-2 mx-auto md:mx-0">
+                  <img 
+                    src={selectedMember.img} 
+                    alt={selectedMember.name} 
+                    className="w-full h-auto object-contain grayscale"
+                  />
+                </div>
+              </div>
+
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

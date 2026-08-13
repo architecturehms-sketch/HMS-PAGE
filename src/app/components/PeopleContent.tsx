@@ -278,7 +278,7 @@ export function PeopleContent({ team }: PeopleContentProps) {
                                 const enItem = selectedMember.educationTimelineEn?.[i];
                                 const year = krItem?.year || enItem?.year;
                                 return (
-                                  <div key={`edu-${i}`} className="flex gap-4 text-xs md:text-sm items-start">
+                                  <div key={`edu-${i}`} className="flex flex-col sm:flex-row gap-1 sm:gap-4 text-xs md:text-sm items-start">
                                     <div className="w-12 sm:w-16 shrink-0 font-mono text-[#f4f4f0]/60 whitespace-nowrap">{year}</div>
                                     <div className="text-[#f4f4f0]/90 leading-relaxed text-left flex flex-wrap items-baseline gap-x-2">
                                       {krItem && <span>{krItem.content}</span>}
@@ -308,7 +308,7 @@ export function PeopleContent({ team }: PeopleContentProps) {
                                 const enItem = selectedMember.careerTimelineEn?.[i];
                                 const year = krItem?.year || enItem?.year;
                                 return (
-                                  <div key={`car-${i}`} className="flex gap-4 text-xs md:text-sm items-start">
+                                  <div key={`car-${i}`} className="flex flex-col sm:flex-row gap-1 sm:gap-4 text-xs md:text-sm items-start">
                                     <div className="w-12 sm:w-16 shrink-0 font-mono text-[#f4f4f0]/60 whitespace-nowrap">{year}</div>
                                     <div className="text-[#f4f4f0]/90 leading-relaxed text-left flex flex-wrap items-baseline gap-x-2">
                                       {krItem && <span>{krItem.content}</span>}

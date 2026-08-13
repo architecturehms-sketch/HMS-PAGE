@@ -333,7 +333,7 @@ export function PeopleContent({ team }: PeopleContentProps) {
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-12 w-full">
                             {selectedMember.recordKr && (
                               <div className="w-full overflow-hidden flex justify-center sm:justify-start">
-                                <div className="text-[10px] md:text-xs text-[#f4f4f0]/90 whitespace-pre leading-relaxed text-center sm:text-left inline-block min-w-full">{selectedMember.recordKr}</div>
+                                <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre leading-relaxed text-center sm:text-left inline-block min-w-full">{selectedMember.recordKr}</div>
                               </div>
                             )}
                             {selectedMember.recordEn && (

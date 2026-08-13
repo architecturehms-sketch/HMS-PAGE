@@ -30,8 +30,8 @@ export function PeopleContent({ team }: PeopleContentProps) {
 
   // Responsive variables (matching CarouselUI)
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  const cardWidth = isMobile ? 80 : 100;
-  const cardHeight = isMobile ? 200 : 240;
+  const cardWidth = isMobile ? 75 : 90;
+  const cardHeight = isMobile ? 185 : 220;
   const gap = isMobile ? 6 : 10;
 
   // Duplicate items to form a dense circle

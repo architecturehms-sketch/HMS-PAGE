@@ -187,7 +187,7 @@ export function PeopleContent({ team }: PeopleContentProps) {
 
       {/* Active Person Info / Detailed Profile Area */}
       <div 
-        className="w-full py-4 md:py-6 px-4 sm:px-8 flex flex-col items-center justify-start text-[#f4f4f0] z-20 relative bg-[#111] shrink-0"
+        className="w-full py-2 md:py-6 px-4 sm:px-8 flex flex-col items-center justify-start text-[#f4f4f0] z-20 relative bg-[#111] shrink-0"
       >
         {displayTeam[activeIndex] && (
           <div className="max-w-5xl w-full flex flex-col items-center">
@@ -250,9 +250,9 @@ export function PeopleContent({ team }: PeopleContentProps) {
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                   className="w-full overflow-hidden flex flex-col items-center origin-top cursor-default"
                 >
-                  <div className="w-10 h-[1px] bg-white/20 mt-6 md:mt-10 mb-8 md:mb-12"></div>
+                  <div className="w-10 h-[1px] bg-white/20 mt-4 md:mt-10 mb-6 md:mb-12"></div>
 
-                  <div className="w-full max-w-6xl flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-10 px-4 pb-24 md:pb-40">
+                  <div className="w-full max-w-6xl flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10 px-4 pb-10 md:pb-40">
                     {/* Left: Original Image */}
                     <div className="w-full md:w-1/3 flex justify-center md:justify-end shrink-0">
                       <div className="w-48 md:w-64 aspect-[3/4] overflow-hidden rounded-[2px]" style={{ boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
@@ -423,7 +423,7 @@ export function PeopleContent({ team }: PeopleContentProps) {
           </div>
         </div>
 
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-[#1a1a1a]/80 backdrop-blur-md px-6 py-3 rounded-full font-mono text-[10px] text-[#f4f4f0] tracking-[0.2em] uppercase z-50 pointer-events-none shadow-lg border border-white/10 whitespace-nowrap">
+        <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 bg-[#1a1a1a]/80 backdrop-blur-md px-6 py-3 rounded-full font-mono text-[10px] text-[#f4f4f0] tracking-[0.2em] uppercase z-50 pointer-events-none shadow-lg border border-white/10 whitespace-nowrap">
           {isMobile ? 'Swipe to Rotate' : 'Scroll or Drag to Rotate'}
         </div>
       </div>

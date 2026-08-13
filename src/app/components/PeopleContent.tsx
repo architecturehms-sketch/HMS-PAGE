@@ -186,7 +186,7 @@ export function PeopleContent({ team }: PeopleContentProps) {
 
       {/* Active Person Info / Detailed Profile Area */}
       <div 
-        className="w-full py-4 md:py-6 px-6 sm:px-12 flex flex-col items-center justify-start text-[#f4f4f0] z-20 relative bg-[#111] shrink-0"
+        className="w-full py-4 md:py-6 px-4 sm:px-8 flex flex-col items-center justify-start text-[#f4f4f0] z-20 relative bg-[#111] shrink-0"
       >
         {displayTeam[activeIndex] && (
           <div className="max-w-5xl w-full flex flex-col items-center">
@@ -264,7 +264,7 @@ export function PeopleContent({ team }: PeopleContentProps) {
                 >
                   <div className="w-10 h-[1px] bg-white/20 mt-6 md:mt-10 mb-8 md:mb-12"></div>
 
-                  <div className="w-full max-w-6xl flex flex-col md:flex-row items-center md:items-start gap-12 px-4 pb-24 md:pb-40">
+                  <div className="w-full max-w-6xl flex flex-col md:flex-row items-center md:items-start gap-8 md:gap-10 px-4 pb-24 md:pb-40">
                     {/* Left: Original Image */}
                     <div className="w-full md:w-1/3 flex justify-center md:justify-end shrink-0">
                       <div className="w-48 md:w-64 aspect-[3/4] overflow-hidden rounded-[2px]" style={{ boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
@@ -283,30 +283,28 @@ export function PeopleContent({ team }: PeopleContentProps) {
                         <div className="flex flex-col items-center md:items-start">
                           <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3 md:mb-4">Education</h4>
                           
-                          {selectedMember.educationTimelineKr?.length ? (
+                          {(selectedMember.educationTimelineKr?.length || selectedMember.educationTimelineEn?.length) ? (
                             <div className="flex flex-col gap-2 w-full mt-2">
-                              {selectedMember.educationTimelineKr.map((item, i) => (
-                                <div key={`edu-kr-${i}`} className="flex gap-4 text-xs md:text-sm items-start">
-                                  <div className="w-12 sm:w-16 shrink-0 font-mono text-[#f4f4f0]/60 whitespace-nowrap">{item.year}</div>
-                                  <div className="text-[#f4f4f0]/90 leading-relaxed text-left">{item.content}</div>
-                                </div>
-                              ))}
+                              {Array.from({ length: Math.max(selectedMember.educationTimelineKr?.length || 0, selectedMember.educationTimelineEn?.length || 0) }).map((_, i) => {
+                                const krItem = selectedMember.educationTimelineKr?.[i];
+                                const enItem = selectedMember.educationTimelineEn?.[i];
+                                const year = krItem?.year || enItem?.year;
+                                return (
+                                  <div key={`edu-${i}`} className="flex gap-4 text-xs md:text-sm items-start">
+                                    <div className="w-12 sm:w-16 shrink-0 font-mono text-[#f4f4f0]/60 whitespace-nowrap">{year}</div>
+                                    <div className="text-[#f4f4f0]/90 leading-relaxed text-left flex flex-wrap items-baseline gap-x-2">
+                                      {krItem && <span>{krItem.content}</span>}
+                                      {enItem && <span className="text-[10px] md:text-xs text-[#f4f4f0]/50 font-light">{enItem.content}</span>}
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
-                          ) : selectedMember.educationKr && (
-                            <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed text-center md:text-left">{selectedMember.educationKr}</div>
-                          )}
-
-                          {selectedMember.educationTimelineEn?.length ? (
-                            <div className="flex flex-col gap-2 w-full mt-4">
-                              {selectedMember.educationTimelineEn.map((item, i) => (
-                                <div key={`edu-en-${i}`} className="flex gap-4 text-[10px] md:text-xs items-start">
-                                  <div className="w-12 sm:w-16 shrink-0 font-mono text-[#f4f4f0]/40 whitespace-nowrap">{item.year}</div>
-                                  <div className="text-[#f4f4f0]/50 font-light leading-relaxed text-left">{item.content}</div>
-                                </div>
-                              ))}
+                          ) : (
+                            <div className="flex flex-col xl:flex-row xl:items-baseline gap-1 xl:gap-2">
+                              {selectedMember.educationKr && <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed text-center md:text-left">{selectedMember.educationKr}</div>}
+                              {selectedMember.educationEn && <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light text-center md:text-left">{selectedMember.educationEn}</div>}
                             </div>
-                          ) : selectedMember.educationEn && (
-                            <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light mt-1.5 text-center md:text-left">{selectedMember.educationEn}</div>
                           )}
                         </div>
                       ) : null}
@@ -315,39 +313,47 @@ export function PeopleContent({ team }: PeopleContentProps) {
                         <div className="flex flex-col items-center md:items-start">
                           <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3 md:mb-4">Career</h4>
                           
-                          {selectedMember.careerTimelineKr?.length ? (
+                          {(selectedMember.careerTimelineKr?.length || selectedMember.careerTimelineEn?.length) ? (
                             <div className="flex flex-col gap-2 w-full mt-2">
-                              {selectedMember.careerTimelineKr.map((item, i) => (
-                                <div key={`car-kr-${i}`} className="flex gap-4 text-xs md:text-sm items-start">
-                                  <div className="w-12 sm:w-16 shrink-0 font-mono text-[#f4f4f0]/60 whitespace-nowrap">{item.year}</div>
-                                  <div className="text-[#f4f4f0]/90 leading-relaxed text-left">{item.content}</div>
-                                </div>
-                              ))}
+                              {Array.from({ length: Math.max(selectedMember.careerTimelineKr?.length || 0, selectedMember.careerTimelineEn?.length || 0) }).map((_, i) => {
+                                const krItem = selectedMember.careerTimelineKr?.[i];
+                                const enItem = selectedMember.careerTimelineEn?.[i];
+                                const year = krItem?.year || enItem?.year;
+                                return (
+                                  <div key={`car-${i}`} className="flex gap-4 text-xs md:text-sm items-start">
+                                    <div className="w-12 sm:w-16 shrink-0 font-mono text-[#f4f4f0]/60 whitespace-nowrap">{year}</div>
+                                    <div className="text-[#f4f4f0]/90 leading-relaxed text-left flex flex-wrap items-baseline gap-x-2">
+                                      {krItem && <span>{krItem.content}</span>}
+                                      {enItem && <span className="text-[10px] md:text-xs text-[#f4f4f0]/50 font-light">{enItem.content}</span>}
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
-                          ) : selectedMember.careerKr && (
-                            <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed text-center md:text-left">{selectedMember.careerKr}</div>
-                          )}
-
-                          {selectedMember.careerTimelineEn?.length ? (
-                            <div className="flex flex-col gap-2 w-full mt-4">
-                              {selectedMember.careerTimelineEn.map((item, i) => (
-                                <div key={`car-en-${i}`} className="flex gap-4 text-[10px] md:text-xs items-start">
-                                  <div className="w-12 sm:w-16 shrink-0 font-mono text-[#f4f4f0]/40 whitespace-nowrap">{item.year}</div>
-                                  <div className="text-[#f4f4f0]/50 font-light leading-relaxed text-left">{item.content}</div>
-                                </div>
-                              ))}
+                          ) : (
+                            <div className="flex flex-col xl:flex-row xl:items-baseline gap-1 xl:gap-2">
+                              {selectedMember.careerKr && <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed text-center md:text-left">{selectedMember.careerKr}</div>}
+                              {selectedMember.careerEn && <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light text-center md:text-left">{selectedMember.careerEn}</div>}
                             </div>
-                          ) : selectedMember.careerEn && (
-                            <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light mt-1.5 text-center md:text-left">{selectedMember.careerEn}</div>
                           )}
                         </div>
                       ) : null}
                       {/* Record */}
                       {(selectedMember.recordKr || selectedMember.recordEn) && (
-                        <div className="flex flex-col items-center md:items-start sm:col-span-2">
+                        <div className="flex flex-col items-center md:items-start sm:col-span-2 max-w-full overflow-hidden">
                           <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3 md:mb-4">Record</h4>
-                          <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.recordKr}</div>
-                          <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light mt-1.5">{selectedMember.recordEn}</div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-12 w-full">
+                            {selectedMember.recordKr && (
+                              <div className="w-full overflow-hidden">
+                                <div className="text-[10px] md:text-xs text-[#f4f4f0]/90 whitespace-pre leading-relaxed text-left inline-block min-w-full">{selectedMember.recordKr}</div>
+                              </div>
+                            )}
+                            {selectedMember.recordEn && (
+                              <div className="w-full overflow-hidden">
+                                <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre leading-relaxed font-light text-left inline-block min-w-full">{selectedMember.recordEn}</div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>

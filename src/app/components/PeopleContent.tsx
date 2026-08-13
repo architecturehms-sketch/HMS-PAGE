@@ -159,29 +159,30 @@ export function PeopleContent({ team }: PeopleContentProps) {
          if (selectedMember) setSelectedMember(null);
       }}
     >
-      {/* Absolute Close Button for Selected Member */}
-      <AnimatePresence>
-        {selectedMember && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedMember(null);
-            }}
-            className="absolute top-4 right-4 sm:top-6 sm:right-6 z-[100] flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-full bg-[#1a1a1a]/80 backdrop-blur-md border border-white/20 text-white/70 hover:text-white hover:bg-white/10 hover:border-white/50 transition-all cursor-pointer group shadow-2xl"
-          >
-            <span className="text-[10px] font-mono uppercase tracking-widest hidden sm:block">Close</span>
-            <X size={16} className="transition-transform duration-300 group-hover:rotate-90" />
-          </motion.button>
-        )}
-      </AnimatePresence>
       {/* Header */}
-      <section className="px-4 sm:px-6 py-4 flex flex-col justify-center items-start relative overflow-hidden shrink-0 z-20 border-b border-white/10">
+      <section className="px-4 sm:px-6 py-3 flex flex-row justify-between items-center relative overflow-hidden shrink-0 z-20 border-b border-white/10">
         <h2 className="font-mono text-[10px] sm:text-xs uppercase tracking-widest text-[#f4f4f0]">
           PEOPLE /// OUR CREW
         </h2>
+        
+        {/* Close Button for Selected Member */}
+        <AnimatePresence>
+          {selectedMember && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedMember(null);
+              }}
+              className="z-[100] flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-1.5 rounded-full bg-[#1a1a1a]/80 backdrop-blur-md border border-white/20 text-white/70 hover:text-white hover:bg-white/10 hover:border-white/50 transition-all cursor-pointer group shadow-lg"
+            >
+              <span className="text-[10px] font-mono uppercase tracking-widest hidden sm:block">Close</span>
+              <X size={14} className="transition-transform duration-300 group-hover:rotate-90" />
+            </motion.button>
+          )}
+        </AnimatePresence>
       </section>
 
       {/* Active Person Info / Detailed Profile Area */}

@@ -278,9 +278,9 @@ export function PeopleContent({ team }: PeopleContentProps) {
                                 const enItem = selectedMember.educationTimelineEn?.[i];
                                 const year = krItem?.year || enItem?.year;
                                 return (
-                                  <div key={`edu-${i}`} className="flex flex-col sm:flex-row gap-1 sm:gap-4 text-xs md:text-sm items-start">
-                                    <div className="w-12 sm:w-16 shrink-0 font-mono text-[#f4f4f0]/60 whitespace-nowrap">{year}</div>
-                                    <div className="text-[#f4f4f0]/90 leading-relaxed text-left flex flex-wrap items-baseline gap-x-2">
+                                  <div key={`edu-${i}`} className="flex flex-col sm:flex-row gap-1 sm:gap-4 text-xs md:text-sm items-center sm:items-start">
+                                    <div className="w-auto sm:w-16 shrink-0 font-mono text-[#f4f4f0]/60 whitespace-nowrap text-center sm:text-left">{year}</div>
+                                    <div className="text-[#f4f4f0]/90 leading-relaxed text-center sm:text-left flex flex-wrap items-baseline justify-center sm:justify-start gap-x-2">
                                       {krItem && <span>{krItem.content}</span>}
                                       {enItem && <span className="text-[10px] md:text-xs text-[#f4f4f0]/50 font-light">{enItem.content}</span>}
                                     </div>
@@ -308,9 +308,9 @@ export function PeopleContent({ team }: PeopleContentProps) {
                                 const enItem = selectedMember.careerTimelineEn?.[i];
                                 const year = krItem?.year || enItem?.year;
                                 return (
-                                  <div key={`car-${i}`} className="flex flex-col sm:flex-row gap-1 sm:gap-4 text-xs md:text-sm items-start">
-                                    <div className="w-12 sm:w-16 shrink-0 font-mono text-[#f4f4f0]/60 whitespace-nowrap">{year}</div>
-                                    <div className="text-[#f4f4f0]/90 leading-relaxed text-left flex flex-wrap items-baseline gap-x-2">
+                                  <div key={`car-${i}`} className="flex flex-col sm:flex-row gap-1 sm:gap-4 text-xs md:text-sm items-center sm:items-start">
+                                    <div className="w-auto sm:w-16 shrink-0 font-mono text-[#f4f4f0]/60 whitespace-nowrap text-center sm:text-left">{year}</div>
+                                    <div className="text-[#f4f4f0]/90 leading-relaxed text-center sm:text-left flex flex-wrap items-baseline justify-center sm:justify-start gap-x-2">
                                       {krItem && <span>{krItem.content}</span>}
                                       {enItem && <span className="text-[10px] md:text-xs text-[#f4f4f0]/50 font-light">{enItem.content}</span>}
                                     </div>
@@ -332,13 +332,13 @@ export function PeopleContent({ team }: PeopleContentProps) {
                           <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3 md:mb-4">Record</h4>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-12 w-full">
                             {selectedMember.recordKr && (
-                              <div className="w-full overflow-hidden">
-                                <div className="text-[10px] md:text-xs text-[#f4f4f0]/90 whitespace-pre leading-relaxed text-left inline-block min-w-full">{selectedMember.recordKr}</div>
+                              <div className="w-full overflow-hidden flex justify-center sm:justify-start">
+                                <div className="text-[10px] md:text-xs text-[#f4f4f0]/90 whitespace-pre leading-relaxed text-center sm:text-left inline-block min-w-full">{selectedMember.recordKr}</div>
                               </div>
                             )}
                             {selectedMember.recordEn && (
-                              <div className="w-full overflow-hidden">
-                                <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre leading-relaxed font-light text-left inline-block min-w-full">{selectedMember.recordEn}</div>
+                              <div className="w-full overflow-hidden flex justify-center sm:justify-start">
+                                <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre leading-relaxed font-light text-center sm:text-left inline-block min-w-full">{selectedMember.recordEn}</div>
                               </div>
                             )}
                           </div>

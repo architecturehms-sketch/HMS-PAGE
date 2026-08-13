@@ -423,7 +423,7 @@ export function PeopleContent({ team }: PeopleContentProps) {
           </div>
         </div>
 
-        <div className="absolute bottom-10 md:bottom-6 left-1/2 -translate-x-1/2 bg-[#1a1a1a]/80 backdrop-blur-md px-6 py-3 rounded-full font-mono text-[10px] text-[#f4f4f0] tracking-[0.2em] uppercase z-50 pointer-events-none shadow-lg border border-white/10 whitespace-nowrap">
+        <div className="absolute bottom-[25%] md:bottom-6 left-1/2 -translate-x-1/2 bg-[#1a1a1a]/80 backdrop-blur-md px-6 py-3 rounded-full font-mono text-[10px] text-[#f4f4f0] tracking-[0.2em] uppercase z-50 pointer-events-none shadow-lg border border-white/10 whitespace-nowrap">
           {isMobile ? 'Swipe to Rotate' : 'Scroll or Drag to Rotate'}
         </div>
       </div>

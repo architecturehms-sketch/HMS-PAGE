@@ -67,7 +67,22 @@ export function MainContent({ isVisible, onOpenAdmin, onGoToCarousel, onSelectCa
     });
   }, [projects, pageData?.customCategories, pageData?.categoryProjectOrders]);
 
-
+  const topHeaderElement = (
+    <header className={`p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-[10px] sm:text-xs uppercase border-b leading-relaxed tracking-widest transition-colors duration-500 ${activeTab === 'about' ? 'bg-[#1a1a1a] text-[#f4f4f0] border-white/20' : 'bg-[#f4f4f0] text-[#1a1a1a] border-[#1a1a1a]/30'}`}>
+      <div>
+        HMS ARCHITECTURE<br />
+        BASED IN {pageData.address.toUpperCase()}
+      </div>
+      <div className="sm:text-center hidden sm:block">
+        {pageData.contactEmail}<br />
+        <a href={`mailto:${pageData.contactEmail}`} className="hover:underline">CONTACT US</a>
+      </div>
+      <div className="sm:text-right">
+        STATUS: ACTIVE<br />
+        <Clock />
+      </div>
+    </header>
+  );
 
   return (
     <div 
@@ -77,6 +92,11 @@ export function MainContent({ isVisible, onOpenAdmin, onGoToCarousel, onSelectCa
     >
       <div className="flex flex-col md:flex-row w-full min-h-screen">
         
+        {/* Mobile Top Header */}
+        <div className="md:hidden w-full">
+          {topHeaderElement}
+        </div>
+
         {/* Left Sidebar */}
         <aside className="w-full md:w-[25vw] h-auto md:h-screen md:fixed md:top-0 md:left-0 border-b md:border-b-0 md:border-r border-[#f4f4f0]/20 p-4 sm:p-6 md:p-8 flex flex-col z-20 overflow-y-visible md:overflow-y-auto hide-scrollbar shrink-0 bg-[#1a1a1a]">
           <div className="flex justify-between items-start mb-8 md:mb-12 shrink-0 order-1 md:order-1">
@@ -107,21 +127,10 @@ export function MainContent({ isVisible, onOpenAdmin, onGoToCarousel, onSelectCa
 
         {/* Right Content */}
         <main className="w-full md:w-[75vw] md:ml-[25vw] relative z-10 flex flex-col shrink-0 min-h-screen">
-          {/* Top Header Grid */}
-          <header className={`p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-[10px] sm:text-xs uppercase border-b leading-relaxed tracking-widest transition-colors duration-500 ${activeTab === 'about' ? 'bg-[#1a1a1a] text-[#f4f4f0] border-white/20' : 'bg-[#f4f4f0] text-[#1a1a1a] border-[#1a1a1a]/30'}`}>
-            <div>
-              HMS ARCHITECTURE<br />
-              BASED IN {pageData.address.toUpperCase()}
-            </div>
-            <div className="sm:text-center hidden sm:block">
-              {pageData.contactEmail}<br />
-              <a href={`mailto:${pageData.contactEmail}`} className="hover:underline">CONTACT US</a>
-            </div>
-            <div className="sm:text-right">
-              STATUS: ACTIVE<br />
-              <Clock />
-            </div>
-          </header>
+          {/* Desktop Top Header Grid */}
+          <div className="hidden md:block w-full">
+            {topHeaderElement}
+          </div>
 
           <div className={`flex-1 flex flex-col transition-colors duration-500 ${activeTab === 'about' ? 'bg-[#1a1a1a]' : 'bg-[#f4f4f0]'}`}>
             {activeTab === 'index' && (

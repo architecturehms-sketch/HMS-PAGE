@@ -154,11 +154,29 @@ export function PeopleContent({ team }: PeopleContentProps) {
 
   return (
     <div 
-      className="flex-1 flex flex-col bg-[#111] animate-[fadeIn_0.5s_ease-out] h-full overflow-hidden"
+      className="flex-1 flex flex-col bg-[#111] animate-[fadeIn_0.5s_ease-out] h-full overflow-hidden relative"
       onClick={() => {
          if (selectedMember) setSelectedMember(null);
       }}
     >
+      {/* Absolute Close Button for Selected Member */}
+      <AnimatePresence>
+        {selectedMember && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedMember(null);
+            }}
+            className="absolute top-4 right-4 sm:top-6 sm:right-6 z-[100] flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-full bg-[#1a1a1a]/80 backdrop-blur-md border border-white/20 text-white/70 hover:text-white hover:bg-white/10 hover:border-white/50 transition-all cursor-pointer group shadow-2xl"
+          >
+            <span className="text-[10px] font-mono uppercase tracking-widest hidden sm:block">Close</span>
+            <X size={16} className="transition-transform duration-300 group-hover:rotate-90" />
+          </motion.button>
+        )}
+      </AnimatePresence>
       {/* Header */}
       <section className="px-4 sm:px-6 py-4 flex flex-col justify-center items-start relative overflow-hidden shrink-0 z-20 border-b border-white/10">
         <h2 className="font-mono text-[10px] sm:text-xs uppercase tracking-widest text-[#f4f4f0]">
@@ -261,21 +279,69 @@ export function PeopleContent({ team }: PeopleContentProps) {
                     {/* Right: Career Details */}
                     <div className="w-full md:w-2/3 grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-12 text-center md:text-left pt-4 md:pt-0">
                       {/* Education */}
-                      {(selectedMember.educationKr || selectedMember.educationEn) && (
+                      {(selectedMember.educationTimelineKr?.length || selectedMember.educationTimelineEn?.length || selectedMember.educationKr || selectedMember.educationEn) ? (
                         <div className="flex flex-col items-center md:items-start">
                           <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3 md:mb-4">Education</h4>
-                          <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.educationKr}</div>
-                          <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light mt-1.5">{selectedMember.educationEn}</div>
+                          
+                          {selectedMember.educationTimelineKr?.length ? (
+                            <div className="flex flex-col gap-2 w-full mt-2">
+                              {selectedMember.educationTimelineKr.map((item, i) => (
+                                <div key={`edu-kr-${i}`} className="flex gap-4 text-xs md:text-sm items-start">
+                                  <div className="w-12 sm:w-16 shrink-0 font-mono text-[#f4f4f0]/60 whitespace-nowrap">{item.year}</div>
+                                  <div className="text-[#f4f4f0]/90 leading-relaxed text-left">{item.content}</div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : selectedMember.educationKr && (
+                            <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed text-center md:text-left">{selectedMember.educationKr}</div>
+                          )}
+
+                          {selectedMember.educationTimelineEn?.length ? (
+                            <div className="flex flex-col gap-2 w-full mt-4">
+                              {selectedMember.educationTimelineEn.map((item, i) => (
+                                <div key={`edu-en-${i}`} className="flex gap-4 text-[10px] md:text-xs items-start">
+                                  <div className="w-12 sm:w-16 shrink-0 font-mono text-[#f4f4f0]/40 whitespace-nowrap">{item.year}</div>
+                                  <div className="text-[#f4f4f0]/50 font-light leading-relaxed text-left">{item.content}</div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : selectedMember.educationEn && (
+                            <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light mt-1.5 text-center md:text-left">{selectedMember.educationEn}</div>
+                          )}
                         </div>
-                      )}
+                      ) : null}
                       {/* Career */}
-                      {(selectedMember.careerKr || selectedMember.careerEn) && (
+                      {(selectedMember.careerTimelineKr?.length || selectedMember.careerTimelineEn?.length || selectedMember.careerKr || selectedMember.careerEn) ? (
                         <div className="flex flex-col items-center md:items-start">
                           <h4 className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] font-semibold text-[#E3342F] mb-3 md:mb-4">Career</h4>
-                          <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed">{selectedMember.careerKr}</div>
-                          <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light mt-1.5">{selectedMember.careerEn}</div>
+                          
+                          {selectedMember.careerTimelineKr?.length ? (
+                            <div className="flex flex-col gap-2 w-full mt-2">
+                              {selectedMember.careerTimelineKr.map((item, i) => (
+                                <div key={`car-kr-${i}`} className="flex gap-4 text-xs md:text-sm items-start">
+                                  <div className="w-12 sm:w-16 shrink-0 font-mono text-[#f4f4f0]/60 whitespace-nowrap">{item.year}</div>
+                                  <div className="text-[#f4f4f0]/90 leading-relaxed text-left">{item.content}</div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : selectedMember.careerKr && (
+                            <div className="text-xs md:text-sm text-[#f4f4f0]/90 whitespace-pre-wrap leading-relaxed text-center md:text-left">{selectedMember.careerKr}</div>
+                          )}
+
+                          {selectedMember.careerTimelineEn?.length ? (
+                            <div className="flex flex-col gap-2 w-full mt-4">
+                              {selectedMember.careerTimelineEn.map((item, i) => (
+                                <div key={`car-en-${i}`} className="flex gap-4 text-[10px] md:text-xs items-start">
+                                  <div className="w-12 sm:w-16 shrink-0 font-mono text-[#f4f4f0]/40 whitespace-nowrap">{item.year}</div>
+                                  <div className="text-[#f4f4f0]/50 font-light leading-relaxed text-left">{item.content}</div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : selectedMember.careerEn && (
+                            <div className="text-[10px] md:text-xs text-[#f4f4f0]/50 whitespace-pre-wrap leading-relaxed font-light mt-1.5 text-center md:text-left">{selectedMember.careerEn}</div>
+                          )}
                         </div>
-                      )}
+                      ) : null}
                       {/* Record */}
                       {(selectedMember.recordKr || selectedMember.recordEn) && (
                         <div className="flex flex-col items-center md:items-start sm:col-span-2">

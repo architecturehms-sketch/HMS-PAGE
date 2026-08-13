@@ -5,7 +5,7 @@ import { auth, db, storage } from '../../lib/firebase';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { collection, addDoc, updateDoc, deleteDoc, doc, setDoc, writeBatch, getDocs } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { Project, PageData, TeamMember, MapLocation } from '../../hooks/useFirebaseData';
+import { Project, PageData, TeamMember, MapLocation, TimelineItem } from '../../hooks/useFirebaseData';
 import { carouselData } from '../data';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -431,6 +431,77 @@ const compressImage = (file: File, maxWidth = 1440): Promise<File> => {
     img.src = url;
   });
 };
+
+interface TimelineEditorProps {
+  title: string;
+  items: TimelineItem[];
+  onChange: (items: TimelineItem[]) => void;
+  placeholderYear?: string;
+  placeholderContent?: string;
+}
+
+function TimelineEditor({ title, items, onChange, placeholderYear = "Year", placeholderContent = "Content" }: TimelineEditorProps) {
+  const handleAdd = () => {
+    onChange([...items, { year: '', content: '' }]);
+  };
+
+  const handleUpdate = (index: number, field: 'year' | 'content', value: string) => {
+    const newItems = [...items];
+    newItems[index] = { ...newItems[index], [field]: value };
+    onChange(newItems);
+  };
+
+  const handleRemove = (index: number) => {
+    const newItems = [...items];
+    newItems.splice(index, 1);
+    onChange(newItems);
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-[10px] uppercase tracking-widest text-[#f4f4f0]">{title}</h3>
+        <button
+          type="button"
+          onClick={handleAdd}
+          className="text-[10px] flex items-center gap-1 uppercase tracking-widest text-[#f4f4f0] hover:text-[#1a1a1a] hover:bg-[#f4f4f0] border border-[#f4f4f0]/30 px-2 py-1 transition-colors"
+        >
+          <Plus size={10} /> ADD ROW
+        </button>
+      </div>
+      <div className="space-y-2">
+        {items.map((item, index) => (
+          <div key={index} className="flex gap-2 items-start">
+            <input
+              type="text"
+              value={item.year}
+              onChange={e => handleUpdate(index, 'year', e.target.value)}
+              className="w-1/4 bg-transparent border border-[#f4f4f0]/30 px-2 py-1.5 text-xs focus:outline-none focus:border-[#f4f4f0]"
+              placeholder={placeholderYear}
+            />
+            <input
+              type="text"
+              value={item.content}
+              onChange={e => handleUpdate(index, 'content', e.target.value)}
+              className="flex-1 bg-transparent border border-[#f4f4f0]/30 px-2 py-1.5 text-xs focus:outline-none focus:border-[#f4f4f0]"
+              placeholder={placeholderContent}
+            />
+            <button
+              type="button"
+              onClick={() => handleRemove(index)}
+              className="text-red-400 hover:text-red-300 p-1.5 border border-transparent hover:border-red-500/30 transition-colors"
+            >
+              <Trash2 size={12} />
+            </button>
+          </div>
+        ))}
+        {items.length === 0 && (
+          <div className="text-[10px] text-[#f4f4f0]/40 italic py-2">No items added.</div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export function AdminDashboard({ onClose, initialProjects, initialPageData, initialTeam, initialLocations }: AdminDashboardProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -1484,19 +1555,19 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
                     <div className="space-y-4 pt-4 border-t border-[#f4f4f0]/20">
                       <h3 className="text-[10px] uppercase tracking-widest text-[#f4f4f0] mb-2">Education (학력)</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <textarea
-                          rows={4}
-                          value={currentTeamMember.educationKr || ''}
-                          onChange={e => setCurrentTeamMember({...currentTeamMember, educationKr: e.target.value})}
-                          className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0] resize-none"
-                          placeholder="국문 학력 (줄바꿈으로 구분)"
+                        <TimelineEditor 
+                          title="국문 학력 타임라인" 
+                          items={currentTeamMember.educationTimelineKr || []} 
+                          onChange={(items) => setCurrentTeamMember({...currentTeamMember, educationTimelineKr: items})} 
+                          placeholderYear="연도" 
+                          placeholderContent="내용" 
                         />
-                        <textarea
-                          rows={4}
-                          value={currentTeamMember.educationEn || ''}
-                          onChange={e => setCurrentTeamMember({...currentTeamMember, educationEn: e.target.value})}
-                          className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0] resize-none"
-                          placeholder="English Education (One per line)"
+                        <TimelineEditor 
+                          title="English Education Timeline" 
+                          items={currentTeamMember.educationTimelineEn || []} 
+                          onChange={(items) => setCurrentTeamMember({...currentTeamMember, educationTimelineEn: items})} 
+                          placeholderYear="Year" 
+                          placeholderContent="Content" 
                         />
                       </div>
                     </div>
@@ -1504,19 +1575,19 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
                     <div className="space-y-4 pt-4 border-t border-[#f4f4f0]/20">
                       <h3 className="text-[10px] uppercase tracking-widest text-[#f4f4f0] mb-2">Career (경력)</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <textarea
-                          rows={5}
-                          value={currentTeamMember.careerKr || ''}
-                          onChange={e => setCurrentTeamMember({...currentTeamMember, careerKr: e.target.value})}
-                          className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0] resize-none"
-                          placeholder="국문 경력 (줄바꿈으로 구분)"
+                        <TimelineEditor 
+                          title="국문 경력 타임라인" 
+                          items={currentTeamMember.careerTimelineKr || []} 
+                          onChange={(items) => setCurrentTeamMember({...currentTeamMember, careerTimelineKr: items})} 
+                          placeholderYear="연도" 
+                          placeholderContent="내용" 
                         />
-                        <textarea
-                          rows={5}
-                          value={currentTeamMember.careerEn || ''}
-                          onChange={e => setCurrentTeamMember({...currentTeamMember, careerEn: e.target.value})}
-                          className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0] resize-none"
-                          placeholder="English Career (One per line)"
+                        <TimelineEditor 
+                          title="English Career Timeline" 
+                          items={currentTeamMember.careerTimelineEn || []} 
+                          onChange={(items) => setCurrentTeamMember({...currentTeamMember, careerTimelineEn: items})} 
+                          placeholderYear="Year" 
+                          placeholderContent="Content" 
                         />
                       </div>
                     </div>

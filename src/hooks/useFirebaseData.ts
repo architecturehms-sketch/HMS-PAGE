@@ -3,6 +3,11 @@ import { collection, onSnapshot, doc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { carouselData } from '../app/data';
 
+export interface TimelineItem {
+  year: string;
+  content: string;
+}
+
 export interface TeamMember {
   id: string;
   name: string;
@@ -19,6 +24,10 @@ export interface TeamMember {
   careerEn?: string;
   recordKr?: string;
   recordEn?: string;
+  educationTimelineKr?: TimelineItem[];
+  educationTimelineEn?: TimelineItem[];
+  careerTimelineKr?: TimelineItem[];
+  careerTimelineEn?: TimelineItem[];
 }
 
 export interface Project {

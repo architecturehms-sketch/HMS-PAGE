@@ -279,7 +279,7 @@ export function PeopleContent({ team }: PeopleContentProps) {
                                 const year = krItem?.year || enItem?.year;
                                 return (
                                   <div key={`edu-${i}`} className="flex flex-col sm:flex-row gap-1 sm:gap-4 text-xs md:text-sm items-center sm:items-start">
-                                    <div className="w-auto sm:w-16 shrink-0 font-mono text-[#f4f4f0]/60 whitespace-nowrap text-center sm:text-left">{year}</div>
+                                    <div className="w-auto sm:w-16 shrink-0 font-mono text-[10px] sm:text-xs md:text-sm text-[#f4f4f0]/60 whitespace-nowrap text-center sm:text-left">{year}</div>
                                     <div className="text-[#f4f4f0]/90 leading-relaxed text-center sm:text-left flex flex-wrap items-baseline justify-center sm:justify-start gap-x-2">
                                       {krItem && <span>{krItem.content}</span>}
                                       {enItem && <span className="text-[10px] md:text-xs text-[#f4f4f0]/50 font-light">{enItem.content}</span>}
@@ -309,7 +309,7 @@ export function PeopleContent({ team }: PeopleContentProps) {
                                 const year = krItem?.year || enItem?.year;
                                 return (
                                   <div key={`car-${i}`} className="flex flex-col sm:flex-row gap-1 sm:gap-4 text-xs md:text-sm items-center sm:items-start">
-                                    <div className="w-auto sm:w-16 shrink-0 font-mono text-[#f4f4f0]/60 whitespace-nowrap text-center sm:text-left">{year}</div>
+                                    <div className="w-auto sm:w-16 shrink-0 font-mono text-[10px] sm:text-xs md:text-sm text-[#f4f4f0]/60 whitespace-nowrap text-center sm:text-left">{year}</div>
                                     <div className="text-[#f4f4f0]/90 leading-relaxed text-center sm:text-left flex flex-wrap items-baseline justify-center sm:justify-start gap-x-2">
                                       {krItem && <span>{krItem.content}</span>}
                                       {enItem && <span className="text-[10px] md:text-xs text-[#f4f4f0]/50 font-light">{enItem.content}</span>}

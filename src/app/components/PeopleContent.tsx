@@ -221,19 +221,6 @@ export function PeopleContent({ team }: PeopleContentProps) {
                 <p className="text-xs md:text-sm font-mono text-[#f4f4f0]/60 uppercase tracking-widest">
                   {selectedMember ? selectedMember.role : displayTeam[activeIndex].role}
                 </p>
-                <AnimatePresence>
-                  {selectedMember && selectedMember.roleEn && (
-                    <motion.span 
-                      initial={{ opacity: 0, width: 0 }} 
-                      animate={{ opacity: 1, width: 'auto' }} 
-                      exit={{ opacity: 0, width: 0 }}
-                      className="flex items-center gap-2 whitespace-nowrap overflow-hidden"
-                    >
-                      <span className="text-[#f4f4f0]/20 text-xs pl-2">|</span>
-                      <p className="text-[10px] md:text-xs font-mono text-[#f4f4f0]/30 uppercase tracking-widest">{selectedMember.roleEn}</p>
-                    </motion.span>
-                  )}
-                </AnimatePresence>
               </div>
               
               <AnimatePresence>

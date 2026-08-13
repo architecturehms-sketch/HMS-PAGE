@@ -1519,22 +1519,12 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
                       </div>
                       
                       <div className="space-y-2">
-                        <label className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60">Role (Korean)</label>
+                        <label className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60">Role (English)</label>
                         <input 
                           type="text" 
                           required
                           value={currentTeamMember.role || ''}
                           onChange={e => setCurrentTeamMember({...currentTeamMember, role: e.target.value})}
-                          className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0]"
-                          placeholder="e.g. 소장 (건축사)"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60">Role (English)</label>
-                        <input 
-                          type="text" 
-                          value={currentTeamMember.roleEn || ''}
-                          onChange={e => setCurrentTeamMember({...currentTeamMember, roleEn: e.target.value})}
                           className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0]"
                           placeholder="e.g. Executive Manager (kira)"
                         />

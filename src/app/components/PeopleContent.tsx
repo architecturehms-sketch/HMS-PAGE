@@ -231,8 +231,10 @@ export function PeopleContent({ team }: PeopleContentProps) {
                     exit={{ opacity: 0, height: 0, marginTop: 0 }} 
                     className="overflow-hidden"
                   >
-                    <div className="text-[10px] text-[#E3342F] uppercase tracking-[0.2em] font-mono bg-[#E3342F]/10 py-1.5 px-3 rounded-full inline-block">
-                      {selectedMember.specializations}
+                    <div className="text-[11px] text-[#E3342F] uppercase tracking-[0.2em] font-mono bg-[#E3342F]/10 py-1.5 px-3 rounded-full inline-block">
+                      {selectedMember.specializations.split(/([가-힣\s]+)/).map((part, i) => 
+                        /[가-힣]/.test(part) ? <span key={i} className="font-sans tracking-normal">{part}</span> : part
+                      )}
                     </div>
                   </motion.div>
                 )}

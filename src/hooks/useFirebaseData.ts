@@ -43,6 +43,7 @@ export interface Project {
   content?: string;
   showInCarousel?: boolean;
   carouselOnly?: boolean;
+  isHidden?: boolean;
   videoUrl?: string;
   videoUrl2?: string;
   location?: string;

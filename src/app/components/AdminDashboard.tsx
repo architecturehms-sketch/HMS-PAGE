@@ -526,6 +526,7 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
   const [pageData, setPageData] = useState<PageData>(initialPageData);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
   
   const [isSavingChanges, setIsSavingChanges] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -606,6 +607,53 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
     } finally {
       setUploading(false);
     }
+  };
+
+  const processMultipleFiles = async (files: File[]) => {
+    if (files.length === 0) return;
+    setUploading(true);
+    try {
+      const currentImages = [...(editingProject?.detailImages || [])];
+      
+      for (let i = 0; i < files.length; i++) {
+        let file = files[i];
+        file = await compressImage(file);
+        const prefix = 'projects';
+        const storageRef = ref(storage, `${prefix}/${Date.now()}_${file.name}`);
+        const snapshot = await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(snapshot.ref);
+        
+        let emptyIndex = currentImages.findIndex(img => !img || img.trim() === '');
+        if (emptyIndex !== -1 && emptyIndex < 70) {
+          currentImages[emptyIndex] = url;
+        } else if (currentImages.length < 70) {
+          currentImages.push(url);
+        }
+      }
+      
+      setEditingProject(prev => prev ? {...prev, detailImages: currentImages} : prev);
+      
+    } catch (err) {
+      console.error(err);
+      alert('Failed to upload images.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleMultiImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const files = Array.from(e.target.files).filter(file => file.type.startsWith('image/'));
+    await processMultipleFiles(files);
+  };
+
+  const handleMultiImageDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingOver(false);
+    if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) return;
+    const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+    await processMultipleFiles(files);
   };
 
   const handleSaveProject = (e: React.FormEvent) => {
@@ -1233,6 +1281,15 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
                           />
                           <span className="text-[10px] uppercase tracking-widest">Hide from Selected Works (Carousel Only)</span>
                         </label>
+                        <label className="flex items-center gap-2 cursor-pointer text-[#f4f4f0]/60 hover:text-white transition-colors">
+                          <input 
+                            type="checkbox" 
+                            checked={editingProject.isHidden || false}
+                            onChange={e => setEditingProject({...editingProject, isHidden: e.target.checked})}
+                            className="bg-transparent border-[#f4f4f0]/30"
+                          />
+                          <span className="text-[10px] uppercase tracking-widest text-red-400">Temporarily Hide (Draft)</span>
+                        </label>
                       </div>
                     </div>
 
@@ -1279,9 +1336,36 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
 
                     {!editingProject.isLogo && (
                       <div className="space-y-4 pt-4 border-t border-[#f4f4f0]/20">
-                        <h3 className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60">Detail Page Images (Up to 20)</h3>
+                        <div className="flex justify-between items-center">
+                          <h3 className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60">Detail Page Images (Up to 70)</h3>
+                        </div>
+                        
+                        <div 
+                          className={`w-full p-8 border-2 border-dashed ${isDraggingOver ? 'border-[#f4f4f0] bg-[#f4f4f0]/10' : 'border-[#f4f4f0]/20 bg-[#1a1a1a]'} flex flex-col items-center justify-center transition-colors cursor-pointer text-center relative`}
+                          onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDraggingOver(true); }}
+                          onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDraggingOver(false); }}
+                          onDrop={handleMultiImageDrop}
+                        >
+                          <ImageIcon size={24} className="text-[#f4f4f0]/40 mb-2" />
+                          <p className="text-xs text-[#f4f4f0]/80">Drop images here or click to browse</p>
+                          <p className="text-[10px] text-[#f4f4f0]/40 mt-1">Files will be automatically uploaded and added to empty slots</p>
+                          <input 
+                            type="file" 
+                            multiple 
+                            accept="image/*" 
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            onChange={handleMultiImageSelect}
+                            disabled={uploading}
+                          />
+                          {uploading && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#1a1a1a]/80 backdrop-blur-sm z-10">
+                              <span className="text-xs uppercase tracking-widest animate-pulse">Uploading...</span>
+                            </div>
+                          )}
+                        </div>
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {Array.from({ length: 20 }).map((_, index) => {
+                          {Array.from({ length: 70 }).map((_, index) => {
                             const detailImgs = editingProject.detailImages || [];
                             const url = detailImgs[index] || '';
                             const hasImage = !!url;

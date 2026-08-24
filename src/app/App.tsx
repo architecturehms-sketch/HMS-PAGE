@@ -95,7 +95,8 @@ export default function App() {
     window.history.back();
   };
 
-  const projectCategories = Array.from(new Set(projects.flatMap(p => typeof p.desc === 'string' ? p.desc.split(',').map(c => c.trim()) : []))).filter(Boolean) as string[];
+  const visibleProjects = projects.filter(p => !p.isHidden);
+  const projectCategories = Array.from(new Set(visibleProjects.flatMap(p => typeof p.desc === 'string' ? p.desc.split(',').map(c => c.trim()) : []))).filter(Boolean) as string[];
   const existingCategories = Array.from(new Set([...(pageData?.customCategories || []), ...projectCategories]));
 
   const carouselItems = [
@@ -110,7 +111,7 @@ export default function App() {
     },
     ...existingCategories.filter(cat => cat !== 'ABOUT US').map(cat => {
       const orderList = pageData?.categoryProjectOrders?.[cat] || [];
-      const catProjects = projects.filter(p => p.desc && p.desc.split(',').map(c => c.trim()).includes(cat) && !p.isLogo && p.img)
+      const catProjects = visibleProjects.filter(p => p.desc && p.desc.split(',').map(c => c.trim()).includes(cat) && !p.isLogo && p.img)
         .sort((a, b) => {
           const indexA = orderList.indexOf(a.id as string);
           const indexB = orderList.indexOf(b.id as string);
@@ -145,7 +146,7 @@ export default function App() {
       <CarouselUI isActive={appState === 'carousel'} onSelect={startTransition} projects={carouselItems} />
 
       {/* Main Landing Page Content */}
-      <MainContent isVisible={appState === 'main' || appState === 'transitioning'} onOpenAdmin={() => setAppState('admin')} onGoToCarousel={() => setAppState('carousel')} onSelectCategory={handleSelectCategory} projects={projects} pageData={pageData} team={team} locations={locations} />
+      <MainContent isVisible={appState === 'main' || appState === 'transitioning'} onOpenAdmin={() => setAppState('admin')} onGoToCarousel={() => setAppState('carousel')} onSelectCategory={handleSelectCategory} projects={visibleProjects} pageData={pageData} team={team} locations={locations} />
 
       {/* Project Detail Page Content */}
       <AnimatePresence>
@@ -160,7 +161,7 @@ export default function App() {
           <CategoryArchive 
             key="category-archive"
             category={selectedCategory} 
-            projects={projects} 
+            projects={visibleProjects} 
             pageData={pageData || undefined}
             onClose={() => window.history.back()} 
             onSelectProject={handleSelectProjectFromCategory}

@@ -185,6 +185,37 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
 
         {/* Media Layout */}
         <div className="w-[100vw] flex flex-col gap-16 md:gap-32 mb-32 relative left-0 right-0">
+
+          {/* 3. Video Player */}
+          {project.videoUrl && (
+            <div className="w-full max-w-7xl mx-auto px-6 md:px-12">
+              <div className="w-full h-[50vh] md:h-[90vh] bg-[#111] relative overflow-hidden border border-[#f4f4f0]/10">
+                <video 
+                  src={project.videoUrl} 
+                  autoPlay 
+                  controls
+                  loop 
+                  playsInline
+                  className="absolute inset-0 w-full h-full object-contain transition-all duration-700 opacity-90 hover:opacity-100"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* 4. Second Video Player */}
+          {project.videoUrl2 && (
+            <div className="w-full max-w-7xl mx-auto px-6 md:px-12">
+              <div className="w-full h-[50vh] md:h-[90vh] bg-[#111] relative overflow-hidden border border-[#f4f4f0]/10">
+                <video 
+                  src={project.videoUrl2} 
+                  controls
+                  loop 
+                  playsInline
+                  className="absolute inset-0 w-full h-full object-contain transition-all duration-700 opacity-90 hover:opacity-100"
+                />
+              </div>
+            </div>
+          )}
           
           {/* 1. Individual Large Images (First 2) */}
           <div className="w-full max-w-7xl mx-auto flex flex-col gap-16 md:gap-32 px-6 md:px-12">
@@ -226,37 +257,6 @@ export function ProjectDetail({ project, onClose }: ProjectDetailProps) {
                   <ParallaxImage src={url} alt={`Gallery Detail ${index + 3}`} speed={0.02} />
                 </div>
               ))}
-            </div>
-          )}
-
-          {/* 3. Video Player */}
-          {project.videoUrl && (
-            <div className="w-full max-w-7xl mx-auto px-6 md:px-12">
-              <div className="w-full h-[50vh] md:h-[90vh] bg-[#111] relative overflow-hidden border border-[#f4f4f0]/10">
-                <video 
-                  src={project.videoUrl} 
-                  autoPlay 
-                  controls
-                  loop 
-                  playsInline
-                  className="absolute inset-0 w-full h-full object-contain transition-all duration-700 opacity-90 hover:opacity-100"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* 4. Second Video Player */}
-          {project.videoUrl2 && (
-            <div className="w-full max-w-7xl mx-auto px-6 md:px-12">
-              <div className="w-full h-[50vh] md:h-[90vh] bg-[#111] relative overflow-hidden border border-[#f4f4f0]/10">
-                <video 
-                  src={project.videoUrl2} 
-                  controls
-                  loop 
-                  playsInline
-                  className="absolute inset-0 w-full h-full object-contain transition-all duration-700 opacity-90 hover:opacity-100"
-                />
-              </div>
             </div>
           )}
 

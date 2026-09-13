@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useMemo, useState } from 'react';
 import { TeamMember } from '../../hooks/useFirebaseData';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 
 interface PeopleContentProps {
@@ -259,7 +259,7 @@ export function PeopleContent({ team }: PeopleContentProps) {
                     <div className="w-full md:w-1/3 flex justify-center md:justify-end shrink-0">
                       <div className="w-48 md:w-64 aspect-[3/4] overflow-hidden rounded-[2px]" style={{ boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
                         <img 
-                          src={selectedMember.img} 
+                          src={selectedMember.popupImg || selectedMember.img} 
                           alt={selectedMember.name}
                           className="w-full h-full object-cover transition-all duration-500"
                         />

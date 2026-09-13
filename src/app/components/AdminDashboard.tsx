@@ -575,19 +575,21 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
     };
   }, []);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, index?: number | 'video' | 'video2' | 'team' | 'clientLogo') => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, index?: number | 'video' | 'video2' | 'team' | 'teamPopup' | 'clientLogo') => {
     let file = e.target.files?.[0];
     if (!file) return;
     try {
       setUploading(true);
       file = await compressImage(file);
-      const prefix = index === 'team' ? 'team' : index === 'clientLogo' ? 'logos' : 'projects';
+      const prefix = index === 'team' || index === 'teamPopup' ? 'team' : index === 'clientLogo' ? 'logos' : 'projects';
       const storageRef = ref(storage, `${prefix}/${Date.now()}_${file.name}`);
       const snapshot = await uploadBytes(storageRef, file);
       const url = await getDownloadURL(snapshot.ref);
       
       if (index === 'team') {
         setCurrentTeamMember({...currentTeamMember, img: url});
+      } else if (index === 'teamPopup') {
+        setCurrentTeamMember({...currentTeamMember, popupImg: url});
       } else if (index === 'video') {
         setEditingProject({...editingProject, videoUrl: url});
       } else if (index === 'video2') {
@@ -1687,7 +1689,7 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
                     </div>
 
                     <div className="space-y-2 pt-4 border-t border-[#f4f4f0]/20">
-                      <label className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60">Profile Image</label>
+                      <label className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60">Profile Image (Carousel)</label>
                       <div className="flex gap-4 items-start">
                         <div className="flex-1">
                           <input 
@@ -1707,6 +1709,34 @@ export function AdminDashboard({ onClose, initialProjects, initialPageData, init
                         <div className="w-24 h-32 border border-[#f4f4f0]/30 flex items-center justify-center bg-[#1a1a1a] overflow-hidden shrink-0">
                           {currentTeamMember.img ? (
                             <img src={currentTeamMember.img} alt="Preview" className="w-full h-full object-cover grayscale mix-blend-luminosity" />
+                          ) : (
+                            <ImageIcon className="text-[#f4f4f0]/20" />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[10px] uppercase tracking-widest text-[#f4f4f0]/60">Popup Image (Optional, shows on click)</label>
+                      <div className="flex gap-4 items-start">
+                        <div className="flex-1">
+                          <input 
+                            type="text" 
+                            value={currentTeamMember.popupImg || ''}
+                            onChange={e => setCurrentTeamMember({...currentTeamMember, popupImg: e.target.value})}
+                            className="w-full bg-transparent border border-[#f4f4f0]/30 px-3 py-2 text-sm focus:outline-none focus:border-[#f4f4f0]"
+                            placeholder="https://..."
+                          />
+                          <div className="mt-2 flex items-center">
+                            <label className={`text-[10px] uppercase tracking-widest text-[#f4f4f0] mr-3 border border-[#f4f4f0]/30 px-3 py-1 cursor-pointer transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#f4f4f0] hover:text-[#1a1a1a]'}`}>
+                              {uploading ? 'UPLOADING...' : 'UPLOAD IMAGE'}
+                              <input type="file" className="hidden" accept="image/*" disabled={uploading} onChange={(e) => handleFileUpload(e, 'teamPopup')} />
+                            </label>
+                          </div>
+                        </div>
+                        <div className="w-24 h-32 border border-[#f4f4f0]/30 flex items-center justify-center bg-[#1a1a1a] overflow-hidden shrink-0">
+                          {currentTeamMember.popupImg ? (
+                            <img src={currentTeamMember.popupImg} alt="Preview" className="w-full h-full object-cover grayscale mix-blend-luminosity" />
                           ) : (
                             <ImageIcon className="text-[#f4f4f0]/20" />
                           )}

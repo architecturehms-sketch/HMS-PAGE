@@ -13,6 +13,7 @@ export interface TeamMember {
   name: string;
   role: string;
   img: string;
+  popupImg?: string;
   order?: number;
   createdAt?: any;
   nameEn?: string;

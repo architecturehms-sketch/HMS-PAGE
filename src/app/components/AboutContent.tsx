@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { PageData } from '../../hooks/useFirebaseData';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
